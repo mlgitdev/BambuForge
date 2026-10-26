@@ -39,6 +39,25 @@ For the complete formal engineering specification of all agent rules and skills,
 
 ---
 
+## 🤖 How to Use with Agentic AI (Clone & Prompt)
+
+**BambuForge is engineered specifically to be driven by Agentic AI** (Google Antigravity, Claude Code, Cursor, Copilot Workspace, Windsurf, Codex, etc.). 
+
+You do **not** need to manually edit configuration files, tolerances, or CAD scripts. Once you clone this repository into your workspace, open your AI coding assistant and ask:
+
+```text
+How do I use this repository?
+```
+*(or "Help me set up BambuForge for my 3D printer")*
+
+### The Agentic Onboarding Flow
+1. **Interactive Hardware Calibration:** Your AI agent will inspect [`AGENTS.md`](./AGENTS.md) and immediately respond with:
+   > **"What printer and model do you have?"**
+2. **Automated Fine-Tuning:** Simply reply with your printer (e.g. *Bambu Lab X1C*, *P1S*, *P2S*, *A1*, *A1 Mini*, *Prusa MK4 / XL*, *Voron 2.4*, *Ender 3*, *Elegoo Neptune*, etc.), your nozzle diameter (`0.4 mm` default), and whether you have multi-material / AMS units.
+3. **Instant Self-Configuration:** The agent automatically fine-tunes [`AGENTS.md`](./AGENTS.md), recalibrates the build volume envelope, configures slicing profiles, and generates a personalized quick-start guide so you can immediately begin prompting for custom 3D models!
+
+---
+
 ## 1. Repository Structure
 
 ```text

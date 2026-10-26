@@ -8,6 +8,28 @@
 
 ---
 
+## 0. First-Run Agentic Onboarding Protocol (Automated Fine-Tuning)
+
+When an AI agent (Antigravity, Cursor, Claude Code, Copilot, Windsurf, Codex, etc.) is asked:
+* *"How do I use this repository?"*
+* *"Help me get started"*
+* *"Help me set up BambuForge for my printer"*
+* Or when asked to generate any 3D model before the user's printer configuration has been confirmed:
+
+The agent **MUST immediately ask the user**:
+> **"What printer and model do you have?"**  
+> *(e.g., Bambu Lab X1C / P1S / P2S / A1 / A1 Mini, Voron 2.4, Prusa MK4/XL, Creality Ender 3 / K1, Elegoo Neptune, etc., your nozzle size [0.4 mm default], and whether you have multi-material / AMS units).*
+
+### Automated Fine-Tuning Execution:
+Upon receiving the user's printer response, the agent must automatically complete the environment fine-tuning:
+1. **Calibrate Section 2 (Hardware Profile & Constraints):** Update the `Build Volume (X × Y × Z)`, `Safe Volume`, and `Standard Nozzle` to match the user's specific printer.
+2. **Calibrate Material & Slicing Defaults:**
+   - **Bambu Lab Printers (P2S / X1C / P1S / A1 / A1 Mini):** Set machine profile strings and configure AMS slots (`1..4` or `1..16`).
+   - **Other FDM Printers (Prusa / Voron / Creality / Any FDM):** Configure `.step` / `.stl` multi-body exports and OrcaSlicer / PrusaSlicer settings.
+3. **Persist & Confirm:** Update `AGENTS.md` and present the user with a tailored quick-start guide ready to accept their first model prompt.
+
+---
+
 ## 1. Workspace Architecture
 
 Every model request is isolated in its own dedicated folder under `models/`:
