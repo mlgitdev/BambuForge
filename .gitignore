@@ -1,0 +1,12 @@
+# Python & Virtual Environment
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Temporary Slicer & CAD files
+*.tmp.3mf
+*.verified.3mf
+*.projtmp.3mf
+_p2s_*.json
+*.FCBak

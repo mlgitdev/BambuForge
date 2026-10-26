@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: BambuForge SDD & Architecture
+    url: https://github.com/mlgitdev/BambuForge/blob/main/SDD.md
+    about: Review the complete Spec-Driven Design document and agent skills.

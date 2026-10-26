@@ -1,0 +1,25 @@
+{
+  "file": "examples\\04-self-watering-sip-wicking-planter\\exports\\self_watering_sip_planter_tray1_base_6color.stl",
+  "triangle_count": 38994,
+  "dimensions_mm": {
+    "x": 240.4,
+    "y": 190.4,
+    "z": 195.0
+  },
+  "bounds_z_mm": {
+    "min_z": 0.0,
+    "max_z": 195.0
+  },
+  "volume_cm3": 1646.19,
+  "surface_area_mm2": 461765.2,
+  "bed_contact_area_mm2": 32585.6,
+  "is_watertight_manifold": false,
+  "non_manifold_edges": 3724,
+  "fits_p2s_256mm": true,
+  "fits_safe_margin_250mm": true,
+  "overhang_gt_45deg_area_mm2": 12147.62,
+  "overhang_gt_60deg_area_mm2": 12147.62,
+  "overhang_gt_45deg_percent": 2.63,
+  "support_free_verdict": "WARN (Check Overhangs/Bridges)",
+  "overall_pass": false
+}

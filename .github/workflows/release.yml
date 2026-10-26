@@ -1,0 +1,104 @@
+name: Release Automation & Asset Packaging
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version tag (e.g. v1.0.0)"
+        required: true
+        default: "v1.0.0"
+
+permissions:
+  contents: write
+
+jobs:
+  check-and-package-release:
+    name: Check Version & Package Release Assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine Target Version Tag
+        id: determine-version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG="${{ github.event.inputs.version }}"
+          elif [[ "${{ github.ref_type }}" == "tag" ]]; then
+            TAG="${{ github.ref_name }}"
+          else
+            VERSION=$(cat VERSION | tr -d '[:space:]')
+            TAG="v$VERSION"
+          fi
+
+          echo "Target Release Tag: $TAG"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists on GitHub. Skipping release packaging."
+            echo "should_release=false" >> $GITHUB_OUTPUT
+          else
+            echo "Release $TAG does not exist yet. Proceeding with packaging."
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release Archives (.zip and .tar.gz)
+        if: steps.determine-version.outputs.should_release == 'true'
+        run: |
+          TAG="${{ steps.determine-version.outputs.tag }}"
+          ARCHIVE_DIR="BambuForge-$TAG"
+          mkdir -p "$ARCHIVE_DIR"
+
+          echo "Copying distribution files into $ARCHIVE_DIR..."
+          rsync -av --exclude='.git' --exclude='.github' --exclude="$ARCHIVE_DIR" ./ "$ARCHIVE_DIR/"
+
+          echo "Generating .zip archive..."
+          zip -r "BambuForge-$TAG.zip" "$ARCHIVE_DIR"
+
+          echo "Generating .tar.gz archive..."
+          tar -czvf "BambuForge-$TAG.tar.gz" "$ARCHIVE_DIR"
+
+          ls -lh "BambuForge-$TAG.zip" "BambuForge-$TAG.tar.gz"
+
+      - name: Generate Release Notes & Changelog
+        if: steps.determine-version.outputs.should_release == 'true'
+        id: notes
+        run: |
+          TAG="${{ steps.determine-version.outputs.tag }}"
+          cat << 'EOF' > release_notes.md
+          ## BambuForge Automated Release
+
+          ### What's Inside:
+          - **Spec-Driven Design (SDD)**: Full mechanical engineering specifications and agent choreography.
+          - **Autonomous Agent Skills**:
+            - `3d-print-modeling`: Parametric CAD generation (build123d, OpenSCAD, FreeCAD) calibrated for Bambu Lab P2S.
+            - `bambu-studio-ai`: 3MF structural slicing injection (100% infill connections, 40% corners, 3 walls) and headless slicing CLI.
+            - `self-learning-cad`: 4-step self-learning feedback loop.
+            - `bambuforge-repo-sync`: Automated bidirectional skill and documentation synchronization.
+          - **Production Examples**: 04-self-watering SIP wicking planter with multipart 3MF plates and assembly guides.
+
+          ### Downloadable Assets:
+          - `BambuForge-${TAG}.zip`: Standalone ready-to-use archive for Windows/macOS.
+          - `BambuForge-${TAG}.tar.gz`: Standalone archive for Linux/UNIX environments.
+          EOF
+          cat release_notes.md
+
+      - name: Publish GitHub Release
+        if: steps.determine-version.outputs.should_release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.determine-version.outputs.tag }}"
+          echo "Publishing release $TAG..."
+          gh release create "$TAG" "BambuForge-$TAG.zip" "BambuForge-$TAG.tar.gz" \
+            --title "BambuForge $TAG" \
+            --notes-file release_notes.md
