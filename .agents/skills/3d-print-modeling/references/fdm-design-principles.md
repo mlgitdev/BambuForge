@@ -54,3 +54,17 @@ Horizontal cylinders `> 5 mm` sag at the top (`90°` tangent overhang). `make_te
 ## 4. Support-Free Counterbored Screw Holes (`make_sacrificial_counterbore`)
 
 When a socket-head cap screw counterbore faces the build plate (`Z = 0`), a standard counterbore leaves a floating annular shelf in mid-air. `make_sacrificial_counterbore()` leaves a `0.20 mm` (single-layer) sacrificial bridge between the counterbore roof and the upper clearance shaft so the P2S bridges straight across the hole without supports.
+
+---
+
+## 5. Bulky Model Speed Optimization (`0.28 mm` Draft vs. `0.20 mm` Standard)
+
+For large, volumetric models (planters, pots, saucers, stacking extensions, storage crates):
+1. **Clarify Intent Early:** Proactively ask the user if they prioritize fine surface resolution (`0.20 mm Standard`) or high print speed (`0.28 mm Extra Draft`, saving 35–45% print time).
+2. **Dimension Multiples:** When designing vertical steps, rebates, and interlocking male/female pins, ensure Z-heights align cleanly with both `0.20 mm` and `0.28 mm` (e.g., `2.8 mm`, `5.6 mm`, `8.4 mm`, or multiples of `1.4 mm`).
+3. **Bridge Sizing:** Parameterize sacrificial bridges to match layer height:
+   ```python
+   layer_height = 0.28 if speed_draft else 0.20
+   bridge_thickness = layer_height
+   ```
+4. **Mechanical Advantage:** `0.28 mm` layers provide thicker extruded beads with greater thermal retention, yielding superior layer-to-layer weld strength, impact resistance, and water retention for hydroponic and planter applications.

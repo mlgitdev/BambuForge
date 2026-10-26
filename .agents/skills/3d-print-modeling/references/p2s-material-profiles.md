@@ -19,3 +19,15 @@
 | **M4** | `4.30 mm` | `4.50 mm` | `7.15 mm` | `3.4 mm` | `7.4 mm` |
 | **M5** | `5.30 mm` | `5.50 mm` | `8.15 mm` | `4.2 mm` | `8.9 mm` |
 | **M6** | `6.35 mm` | `6.60 mm` | `10.20 mm` | `5.2 mm` | `10.4 mm` |
+
+## 3. Layer Height & Speed Profiles (Standard vs. Draft for Bulky Prints)
+
+| Slicing Profile | Layer Height | Outer/Inner Line Width | Print Time Factor | Recommended Application |
+| :--- | :--- | :--- | :--- | :--- |
+| **`0.20 mm Standard @BBL P2S`** | `0.20 mm` | `0.42 mm` / `0.45 mm` | Baseline (`100%`) | Detailed miniatures, tight sliding fits, threaded closures, and fine decorative textures. |
+| **`0.28 mm Extra Draft @BBL P2S`** | `0.28 mm` | `0.42 mm` / `0.45 mm` | **~55–65% of baseline** (~35–45% faster) | Large, bulky structural objects (planters, saucers, stacking risers, bins, brackets). Higher thermal mass per layer yields superior interlayer adhesion and watertightness. |
+
+### CAD Impact for `0.28 mm` Draft Printing:
+1. **Sacrificial Bridges:** Size single-layer floating ceilings to match active profile (`0.28 mm` when drafting).
+2. **Vertical Chamfers:** Bottom bed chamfers (`45°`) print cleanly at both `0.20 mm` and `0.28 mm`. Keep chamfer height `>= 1.12 mm` (at least 4 layers of `0.28 mm`).
+3. **Wall Counts:** 3 walls at `0.28 mm` layer height (`~1.30 mm` thickness) provide excellent structural stiffness and watertight hydrostatic containment for planters.

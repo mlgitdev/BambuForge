@@ -23,10 +23,15 @@ The agent **MUST immediately ask the user**:
 ### Automated Fine-Tuning Execution:
 Upon receiving the user's printer response, the agent must automatically complete the environment fine-tuning:
 1. **Calibrate Section 2 (Hardware Profile & Constraints):** Update the `Build Volume (X × Y × Z)`, `Safe Volume`, and `Standard Nozzle` to match the user's specific printer.
-2. **Calibrate Material & Slicing Defaults:**
+2. **Clarify Print Speed & Quality Preference for Bulky Objects:**
+   When modeling large/bulky objects (e.g. planters, bins, housings, structural frames) where miniature precision is not critical, proactively ask the user:
+   > **"What print quality/speed do you prefer?"**
+   > * **`0.20 mm Standard`**: Higher surface resolution, smoother layer lines; best for miniatures, detailed textures, and tight press-fits.
+   > * **`0.28 mm Extra Draft`**: **~35–45% faster printing** with higher layer adhesion; ideal for bulky planters, pots, saucers, and storage boxes.
+3. **Calibrate Material & Slicing Defaults:**
    - **Bambu Lab Printers (P2S / X1C / P1S / A1 / A1 Mini):** Set machine profile strings and configure AMS slots (`1..4` or `1..16`).
    - **Other FDM Printers (Prusa / Voron / Creality / Any FDM):** Configure `.step` / `.stl` multi-body exports and OrcaSlicer / PrusaSlicer settings.
-3. **Persist & Confirm:** Update `AGENTS.md` and present the user with a tailored quick-start guide ready to accept their first model prompt.
+4. **Persist & Confirm:** Update `AGENTS.md` and present the user with a tailored quick-start guide ready to accept their first model prompt.
 
 ---
 
@@ -61,7 +66,7 @@ Every model request is isolated in its own dedicated folder under `models/`:
 | :--- | :--- | :--- |
 | **Build Volume (X × Y × Z)** | `256 × 256 × 256 mm` | Keep single-piece parts `<= 250 mm` per axis for safe skirt/brim margin; split larger parts with dovetails/dowels. |
 | **Standard Nozzle** | `0.4 mm` | Design wall thicknesses as multiples of extrusion width (`0.42 mm` outer / `0.45 mm` inner): `0.85 mm` (2 walls), `1.25 mm` (3 walls), `1.65 mm` (4 walls), `2.0+ mm` (structural). |
-| **Standard Layer Height** | `0.20 mm` (`0.08–0.28 mm` range) | Design vertical Z-steps and sacrificial bridge layers as multiples of `0.20 mm`. |
+| **Standard Layer Height** | `0.20 mm` Standard<br>`0.28 mm` Extra Draft | Default is `0.20 mm`. For bulky structural objects (planters, boxes, frames) where fine precision is secondary, recommend **`0.28 mm Extra Draft`** (~35–45% faster print time). Design vertical Z-steps and sacrificial bridges to match active layer height (`0.20 mm` or `0.28 mm`). |
 | **Preferred Export Formats** | `.step`, `.3mf`, `.stl` | Always export **`.step`** alongside `.3mf`/`.stl`—Bambu Studio slices `.step` files with true circular arcs (`G2`/`G3`) and zero facet artifacts, and `.step` files open directly in **FreeCAD** as editable solids. |
 
 ---
@@ -131,6 +136,9 @@ Whenever the user requests a fine-tuning adjustment, reports a print fit issue, 
   * The `imports/` directory is **strictly read-only input** (for user-supplied MakerWorld / third-party `.3mf`, `.stl`, `.step` files). Never write output files back into `imports/`; always output modified models, previews, and `.3mf` packages to `models/<model-name>/exports/` and `previews/`.
   * When importing/modifying third-party `.3mf` or `.stl` assemblies, always assign clean, descriptive human-readable **object names** (`<metadata key="name" value="..."/>`) and **plate names** (`<metadata key="plater_name" value="..."/>`) inside `Metadata/model_settings.config`.
   * **Mandatory Illustrated Assembly & Usage Guide (`ASSEMBLY_GUIDE.md`):** Every model folder under `models/<model-name>/` must include an `ASSEMBLY_GUIDE.md` accompanied by rendered 3D exploded/cutaway assembly diagrams in `previews/` explaining step-by-step how all parts fit together, their recommended slicing settings (`wall_loops`, `sparse_infill_density`, `sparse_infill_pattern`, and `100%` infill modifiers), filament material guidance, and how any functional accessories (like wicking straws, cloths/cords, or shutters) are used. Write all documentation in a **clean, general, public-shareable product manual tone** (no personal references, user timelines, or chat-specific remarks).
+* **Bulky Structural Model Speed Rule (`0.28 mm` Draft vs `0.20 mm` Standard):** For large or bulky functional objects (planters, saucers, storage bins, structural frames) where miniature resolution is not required, precision is secondary to throughput. Proactively ask the user their speed/quality preference during intake:
+  - `0.20 mm Standard`: Fine surface finish.
+  - `0.28 mm Extra Draft`: **~35–45% print time reduction** with stronger interlayer bonding. Ensure vertical dimensions, Z-chamfers, and sacrificial bridges match `0.28 mm` when selected. Document both print time estimates in `ASSEMBLY_GUIDE.md`.
 
 ---
 
@@ -140,7 +148,7 @@ Whenever the user requests a fine-tuning adjustment, reports a print fit issue, 
 | :--- | :--- | :--- | :--- | :--- |
 | `2026-10-24` | [`models/p2s-support-free-calibration/`](file:///<WORKSPACE_ROOT>/models/p2s-support-free-calibration/) | Support-free P2S calibration & tool dock (`build123d` B-Rep `.step`/`.3mf`/`.stl`) | Verified & Exported | Ready to slice (Supports = OFF) |
 | `2026-10-24` | [`models/cherry-tomato-modular-planter/`](file:///<WORKSPACE_ROOT>/models/cherry-tomato-modular-planter/) | **Style 0: Classic Rectangular Modular Planter** (4 Trays: 6-Color Base + 1-Color Saucer + 4-Color Inverted Riser + 2-Color Sub-Soil Irrigation Arch Straws) | Verified & Exported | 4-Tray Multi-Color `.3mf` |
-| `2026-10-24` | [`models/01-oval-stadium-planter/`](file:///<WORKSPACE_ROOT>/models/01-oval-stadium-planter/) | **Style 1: Oval / Stadium Track Modular Planter** (4 Trays: 6-Color Base + 1-Color Saucer + 4-Color Inverted Riser + 2-Color Sub-Soil Irrigation Arch Straws) | Verified & Exported | 4-Tray Multi-Color `.3mf` |
+| `2026-10-24` | [`models/01-oval-stadium-planter/`](file:///<WORKSPACE_ROOT>/models/01-oval-stadium-planter/) | **Style 1: Oval / Stadium Track Modular Planter** (4 Trays: 6-Color Base + 1-Color Saucer + 4-Color Inverted Riser + 2-Color Sub-Soil Irrigation Arch Straws) | Verified & Exported | Active physical print test; calibrated 0.28mm Extra Draft option for bulky planter speedups |
 | `2026-10-24` | [`models/02-roman-fluted-column-planter/`](file:///<WORKSPACE_ROOT>/models/02-roman-fluted-column-planter/) | **Style 2: Roman Fluted Architectural Column Planter** (4 Trays: 6/1/4/2 Colors incl. Sub-Soil Irrigation Arch Straws) | Verified & Exported | 4-Tray Multi-Color `.3mf` |
 | `2026-10-24` | [`models/03-origami-faceted-prism-planter/`](file:///<WORKSPACE_ROOT>/models/03-origami-faceted-prism-planter/) | **Style 3: Origami Geometric Faceted Prism Planter** (4 Trays: 6/1/4/2 Colors incl. Sub-Soil Irrigation Arch Straws) | Verified & Exported | 4-Tray Multi-Color `.3mf` |
 | `2026-10-24` | [`models/04-self-watering-sip-wicking-planter/`](file:///<WORKSPACE_ROOT>/models/04-self-watering-sip-wicking-planter/) | **Style 4: Sub-Irrigated Self-Watering (SIP) Wicking Planter** (4 Trays: 6/1/4/2 Colors incl. Sub-Soil Irrigation Arch Straws) | Verified & Exported | 4-Tray Multi-Color `.3mf` |
