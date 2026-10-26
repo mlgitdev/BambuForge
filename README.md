@@ -6,9 +6,14 @@
 **Built for Bambu Lab Printers — Portable to Any FDM 3D Printer**
 
 [![Architected with Gemini 4 Argon](https://img.shields.io/badge/Architected_with-Gemini_4_Argon-10b981?style=for-the-badge&logo=google&logoColor=white)](#architecture--gemini-4-argon-attribution)
+[![Release](https://img.shields.io/github/v/release/mlgitdev/BambuForge?color=10b981&label=Release&logo=github&style=for-the-badge)](https://github.com/mlgitdev/BambuForge/releases)
+[![CI Status](https://img.shields.io/github/actions/workflow/status/mlgitdev/BambuForge/ci.yml?branch=main&label=CI&style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/mlgitdev/BambuForge/actions/workflows/ci.yml)
+[![Privacy & Secret Scan](https://img.shields.io/github/actions/workflow/status/mlgitdev/BambuForge/secret-scan.yml?branch=main&label=Privacy%20Audit&style=for-the-badge&color=blue)](https://github.com/mlgitdev/BambuForge/actions/workflows/secret-scan.yml)
+
 [![CAD Engine: build123d (OpenCascade 8.0)](https://img.shields.io/badge/CAD_Engine-build123d_%2F_OpenCascade_8.0-0284c7?style=for-the-badge)](#3-available-skills--required-vs-optional-toolchain)
 [![Support-Free Design: <= 45°](https://img.shields.io/badge/Support--Free_Design-%3C%3D_45%C2%B0_Overhangs-f59e0b?style=for-the-badge)](#2-the-model-creation-process-prompt--cad--slicer--print)
 [![Spec-Driven Design: SDD.md](https://img.shields.io/badge/Specification-SDD.md-8b5cf6?style=for-the-badge)](./SDD.md)
+[![Hardware: Bambu Lab P2S / X1C / FDM](https://img.shields.io/badge/Hardware-Bambu_Lab_P2S_%2F_X1C_%2F_FDM-purple?style=for-the-badge)](./AGENTS.md#2-bambu-lab-p2s-hardware-profile--constraints)
 
 <br/>
 
