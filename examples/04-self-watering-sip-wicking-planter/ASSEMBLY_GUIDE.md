@@ -20,6 +20,12 @@ Your `.3mf` project comes **pre-configured with both Global Process Settings and
 > **How to View or Adjust These Per-Zone Settings in Bambu Studio:**
 > In the **Prepare** tab of Bambu Studio, switch the left toggle from **Global** to **Objects**. Each color sub-part and the two `Modifier_*_100pct_Infill` volumes are listed with their `Wall loops` (`3` or `4`) and `Sparse infill density` (`20%`, `35%`, `40%`, or `100%`) icons next to them—click any zone to customize its strength settings if desired.
 
+> [!TIP]
+> **Print Speed & Layer Height Selection (`0.20 mm Standard` vs. `0.28 mm Extra Draft`):**
+> Because planters are large, bulky structural objects rather than miniature precision figurines:
+> - **`0.20 mm Standard` (Default in `.3mf`):** Delivers fine exterior surface resolution and smooth layer lines.
+> - **`0.28 mm Extra Draft` (High-Speed Alternative for Planters):** Slashes total print time by **~35–45%** on the Base Planter and Riser trays. Because each layer deposits a larger bead of molten plastic, `0.28 mm` provides superior interlayer bonding strength and watertight containment. To use it in Bambu Studio, simply switch the Global Process dropdown to `0.28mm Extra Draft @BBL P2S`—all per-part modifier zones (`100%` solid rods, `40%` corners) adapt automatically.
+
 ---
 
 ## 2. Suggested Filament Materials (Indoor vs. Outdoor Selection Guide)
