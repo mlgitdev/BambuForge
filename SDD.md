@@ -29,7 +29,7 @@ flowchart LR
     end
 
     subgraph SkillLayer["2. Autonomous Skill Execution Layer"]
-        CAD["Skill: 3d-print-modeling<br/>• build123d B-Rep Synthesis<br/>• Read-Only imports/ Mesh Surgery<br/>• Multi-Zone Boolean Partitioning"]
+        CAD["Skill: 3d-print-modeling<br/>• build123d B-Rep Synthesis<br/>• PNG-to-SVG Vectorizer (png_to_svg.py)<br/>• Read-Only imports/ Mesh Surgery<br/>• Multi-Zone Boolean Partitioning<br/>• Flush Planar Modular Joints"]
         SLICER["Skill: bambu-studio-ai<br/>• 2-Column Multi-Plate .3mf Packager<br/>• 6-Filament Profile Flattener<br/>• Per-Zone Infill & 100% Modifier Injector<br/>• 11-Point Overhang & Manifold Auditor"]
         LEARN["Skill: self-learning-cad<br/>• Root-Cause Gap Classification<br/>• /learn Proposal & Rule Promotion"]
     end

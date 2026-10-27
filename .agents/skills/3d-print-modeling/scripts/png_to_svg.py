@@ -42,6 +42,7 @@ except ImportError:
 
 def preprocess_raster_mask(
     image_path: Union[str, Path],
+    channel: str = "auto",
     alpha_threshold: int = 128,
     luminance_threshold: Optional[int] = None,
     invert: bool = False,
@@ -50,16 +51,19 @@ def preprocess_raster_mask(
     """
     Loads an image, isolates foreground vs background, and returns a binary mask
     where foreground = 0 (black) and background = 255 (white).
+    
+    channel: 'auto', 'alpha' (isolate transparency), or 'luminance' (isolate dark/light figures).
     """
     img = Image.open(image_path)
     orig_w, orig_h = img.size
 
-    # Check for alpha channel
-    if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
+    # Check for alpha channel if requested or in auto mode
+    has_alpha = img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info)
+    if (channel in ("auto", "alpha")) and has_alpha:
         img_rgba = img.convert("RGBA")
         alpha = np.array(img_rgba.split()[-1])
-        # If image has meaningful transparency variation:
-        if alpha.min() < 250 and alpha.max() > 10:
+        # If user explicitly asked for alpha OR image has non-trivial transparency:
+        if channel == "alpha" or (alpha.min() < 250 and alpha.max() > 10):
             is_fg = alpha >= alpha_threshold
             if invert:
                 is_fg = ~is_fg
@@ -100,7 +104,6 @@ def preprocess_raster_mask(
     # Denoise / morphological cleanup if opencv is available
     if HAS_CV2 and denoise_radius > 0:
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (denoise_radius * 2 + 1, denoise_radius * 2 + 1))
-        # Remove small isolated background speckles and foreground holes
         mask_inv = cv2.bitwise_not(mask)
         mask_clean = cv2.morphologyEx(mask_inv, cv2.MORPH_OPEN, kernel)
         mask_clean = cv2.morphologyEx(mask_clean, cv2.MORPH_CLOSE, kernel)
@@ -265,8 +268,10 @@ def convert_image_to_svg(
     center_origin: bool = False,
     flip_y: bool = False,
     invert: bool = False,
+    channel: str = "auto",
     alpha_threshold: int = 128,
     luminance_threshold: Optional[int] = None,
+    colormode: str = "binary",
     engine: str = "auto",
     mode: str = "spline",
     filter_speckle: int = 4,
@@ -284,37 +289,55 @@ def convert_image_to_svg(
         out_p = Path(output_path).resolve()
     out_p.parent.mkdir(parents=True, exist_ok=True)
 
-    # 1. Preprocess mask
-    mask, (w, h) = preprocess_raster_mask(
-        in_p,
-        alpha_threshold=alpha_threshold,
-        luminance_threshold=luminance_threshold,
-        invert=invert,
-    )
-
-    # 2. Select engine
     use_vtracer = (engine in ("vtracer", "auto")) and HAS_VTRACER
 
-    if use_vtracer:
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tf:
-            temp_mask_path = tf.name
-        try:
-            Image.fromarray(mask).save(temp_mask_path)
-            vectorize_with_vtracer(
-                temp_mask_path,
-                out_p,
-                mode=mode,
-                filter_speckle=filter_speckle,
-            )
-        finally:
-            if os.path.exists(temp_mask_path):
-                os.remove(temp_mask_path)
-    elif HAS_CV2:
-        vectorize_with_opencv(mask, out_p, tolerance_px=1.0)
+    if colormode == "color" and use_vtracer:
+        # Direct full-color vectorization
+        vtracer.convert_image_to_svg_py(
+            str(in_p),
+            str(out_p),
+            colormode="color",
+            hierarchical="stacked",
+            mode=mode,
+            filter_speckle=filter_speckle,
+            color_precision=6,
+            layer_difference=16,
+            corner_threshold=60,
+            length_threshold=4.0,
+            max_iterations=10,
+            splice_threshold=45,
+            path_precision=3,
+        )
     else:
-        raise RuntimeError("Neither vtracer nor opencv-python is available to vectorize images.")
+        # Binary monochrome / silhouette vectorization
+        mask, (w, h) = preprocess_raster_mask(
+            in_p,
+            channel=channel,
+            alpha_threshold=alpha_threshold,
+            luminance_threshold=luminance_threshold,
+            invert=invert,
+        )
 
-    # 3. Postprocess: scale and center if requested
+        if use_vtracer:
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tf:
+                temp_mask_path = tf.name
+            try:
+                Image.fromarray(mask).save(temp_mask_path)
+                vectorize_with_vtracer(
+                    temp_mask_path,
+                    out_p,
+                    mode=mode,
+                    filter_speckle=filter_speckle,
+                )
+            finally:
+                if os.path.exists(temp_mask_path):
+                    os.remove(temp_mask_path)
+        elif HAS_CV2:
+            vectorize_with_opencv(mask, out_p, tolerance_px=1.0)
+        else:
+            raise RuntimeError("Neither vtracer nor opencv-python is available to vectorize images.")
+
+    # Postprocess: scale and center if requested
     if target_width_mm or target_height_mm or center_origin or flip_y:
         normalize_and_scale_svg(
             out_p,
@@ -332,6 +355,7 @@ def image_to_build123d_faces(
     target_width_mm: Optional[float] = None,
     target_height_mm: Optional[float] = None,
     center_origin: bool = True,
+    channel: str = "auto",
     invert: bool = False,
 ):
     """
@@ -353,6 +377,7 @@ def image_to_build123d_faces(
             target_width_mm=target_width_mm,
             target_height_mm=target_height_mm,
             center_origin=center_origin,
+            channel=channel,
             invert=invert,
         )
         faces = b3d.import_svg(temp_svg)
@@ -373,6 +398,8 @@ def main():
     parser.add_argument("--center", action="store_true", help="Center geometry at origin (0, 0)")
     parser.add_argument("--flip-y", action="store_true", help="Flip Y-axis to match CAD coordinates")
     parser.add_argument("--invert", action="store_true", help="Invert foreground and background")
+    parser.add_argument("--channel", choices=["auto", "alpha", "luminance"], default="auto", help="Mask isolation channel")
+    parser.add_argument("--colormode", choices=["binary", "color"], default="binary", help="Vector color mode (binary silhouette or full color)")
     parser.add_argument("--engine", choices=["auto", "vtracer", "opencv"], default="auto", help="Vectorization engine")
     parser.add_argument("--mode", choices=["spline", "polygon", "none"], default="spline", help="Curve fitting mode")
     parser.add_argument("--filter-speckle", type=int, default=4, help="Speckle noise filter radius in px")
@@ -388,6 +415,8 @@ def main():
         center_origin=args.center,
         flip_y=args.flip_y,
         invert=args.invert,
+        channel=args.channel,
+        colormode=args.colormode,
         alpha_threshold=args.alpha_thresh,
         engine=args.engine,
         mode=args.mode,

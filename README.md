@@ -74,7 +74,9 @@ BambuForge/
 │       ├── bambu-studio-ai/           # Skill 2: Multi-plate .3mf packaging, 11-point analyzer & CAD handoff
 │       └── self-learning-cad/         # Skill 3: Continuous preference calibration & /learn workflow
 ├── examples/
-│   └── 04-self-watering-sip-wicking-planter/ # Flagship 4-Tray, 6-Color self-watering planter showcase
+│   ├── 01-oval-stadium-planter/               # Modular Oval Planter (4 Trays, 6/1/4/2 Colors, flush zero-sanding joint)
+│   ├── 04-self-watering-sip-wicking-planter/  # Flagship 4-Tray, 6-Color self-watering planter showcase
+│   └── cherry-tomato-modular-planter/         # Modular Rectangular Planter (4 Trays, flush locking joints)
 └── models/
     └── <your-model-name>/             # Every new model is generated in its own isolated subdirectory
 ```
@@ -101,7 +103,7 @@ BambuForge/
 
 | Skill Name | Path | Core Responsibilities |
 | :--- | :--- | :--- |
-| **`3d-print-modeling`** | [`.agents/skills/3d-print-modeling/SKILL.md`](./.agents/skills/3d-print-modeling/SKILL.md) | Parametric `build123d` B-Rep modeling, support-free `<= 45°` geometry helpers (`p2s_cad_helpers.py`), multi-color boolean segmentation, read-only `imports/` mesh surgery, and illustrated `ASSEMBLY_GUIDE.md` generation. |
+| **`3d-print-modeling`** | [`.agents/skills/3d-print-modeling/SKILL.md`](./.agents/skills/3d-print-modeling/SKILL.md) | Parametric `build123d` B-Rep modeling, support-free `<= 45°` geometry helpers (`p2s_cad_helpers.py`), raster-to-SVG vectorizer (`png_to_svg.py`), multi-color boolean segmentation, read-only `imports/` mesh surgery, and illustrated `ASSEMBLY_GUIDE.md` generation. |
 | **`bambu-studio-ai`** | [`.agents/skills/bambu-studio-ai/SKILL.md`](./.agents/skills/bambu-studio-ai/SKILL.md) | 2-column multi-plate `.3mf` packaging, recursive JSON profile flattening, 6-filament `--load-filaments` injection, per-part/modifier-mesh infill injection, 11-point printability/overhang auditing (`analyze.py`), and slicer/CAD handoff. |
 | **`self-learning-cad`** | [`.agents/skills/self-learning-cad/SKILL.md`](./.agents/skills/self-learning-cad/SKILL.md) | Captures dimensional fit adjustments, slicer edge cases, and design preferences into `learned-preferences.md` and `AGENTS.md` via interactive `/learn` proposals. |
 
@@ -111,6 +113,7 @@ BambuForge/
 | :--- | :--- | :--- | :--- |
 | **Python `3.11+`** | **Required** | Runs the `build123d` OpenCascade B-Rep kernel, mesh surgery, analyzer, and preview renderers. | `python -m venv .venv && pip install -r requirements.txt` |
 | **`build123d` (`>=0.13`) + `trimesh` + `matplotlib`** | **Required** | Core Python CAD & geometry libraries installed inside `.venv`. | Installed automatically via `requirements.txt`. |
+| **`vtracer` + `opencv-python`** | **Required for Vectorization** | Rust-accelerated image vectorizer (`png_to_svg.py`) for importing PNG logos/artwork into CAD sketches & modifier meshes. | Installed automatically via `requirements.txt`. |
 | **Bambu Studio** *(or **OrcaSlicer**)* | **Required for Multi-Plate `.3mf` CLI** | Slices `.step`/`.3mf` files and executes headless `--export-3mf` multi-plate verification & OpenGL thumbnail generation. | [Bambu Studio](https://bambulab.com/en/download/studio) or [OrcaSlicer](https://github.com/SoftFever/OrcaSlicer). *(Without it, `.step`, `.stl`, and single-mesh `.3mf` exports still work 100% standalone).* |
 | **FreeCAD `1.1+`** | **Nice-to-Have (Optional)** | Visual B-Rep CAD inspection and interactive solid editing of exported `.step` assemblies. | Optional; launch via `bambu_handoff.py --app freecad --open <file.step>`. |
 | **CADCraft** (`storytold/cadcraft`) | **Nice-to-Have (Optional)** | Pure-Rust AutoCAD-style 2D `.dxf`/`.scr` drafting tool with built-in MCP server (`cadcraft-cli mcp --launch`). | Optional; useful for drafting 2D `.dxf` profiles to extrude in `build123d`. |

@@ -1,0 +1,25 @@
+{
+  "file": "<WORKSPACE_ROOT>\\models\\cherry-tomato-modular-planter\\exports\\cherry_tomato_deep_root_riser.stl",
+  "triangle_count": 12010,
+  "dimensions_mm": {
+    "x": 245.0,
+    "y": 195.0,
+    "z": 140.0
+  },
+  "bounds_z_mm": {
+    "min_z": -0.0,
+    "max_z": 140.0
+  },
+  "volume_cm3": 933.73,
+  "surface_area_mm2": 251360.6,
+  "bed_contact_area_mm2": 1697.9,
+  "is_watertight_manifold": true,
+  "non_manifold_edges": 0,
+  "fits_p2s_256mm": true,
+  "fits_safe_margin_250mm": true,
+  "overhang_gt_45deg_area_mm2": 3.93,
+  "overhang_gt_60deg_area_mm2": 0.0,
+  "overhang_gt_45deg_percent": 0.0,
+  "support_free_verdict": "PASS (Support-Free Ready)",
+  "overall_pass": true
+}

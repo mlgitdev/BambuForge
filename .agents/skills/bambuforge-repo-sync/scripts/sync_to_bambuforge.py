@@ -29,11 +29,11 @@ DEFAULT_SOURCE = _BASE_DIR / "3D-Automation"
 DEFAULT_TARGET = _BASE_DIR / "BambuForge"
 
 SANITIZATION_RULES = [
-    (rf"E:[\\/]{_PRJ_KEYWORD}[\\/]3dModeling[\\/]3D-Automation", "<WORKSPACE_ROOT>"),
-    (rf"E:[\\/]{_PRJ_KEYWORD}[\\/]3dModeling[\\/]BambuForge", "<WORKSPACE_ROOT>"),
-    (rf"E:[\\/]{_PRJ_KEYWORD}[\\/]", "<PROJECTS_ROOT>/"),
-    (rf"C:[\\/]Users[\\/]{_USER_KEYWORD}[\\/]\.gemini[\\/]antigravity", "<APP_DATA_DIR>"),
-    (rf"C:[\\/]Users[\\/]{_USER_KEYWORD}", "<USER_HOME>"),
+    (rf"E:(\\\\|[\\/]){_PRJ_KEYWORD}(\\\\|[\\/])3dModeling(\\\\|[\\/])3D-Automation", "<WORKSPACE_ROOT>"),
+    (rf"E:(\\\\|[\\/]){_PRJ_KEYWORD}(\\\\|[\\/])3dModeling(\\\\|[\\/])BambuForge", "<WORKSPACE_ROOT>"),
+    (rf"E:(\\\\|[\\/]){_PRJ_KEYWORD}(\\\\|[\\/])", "<PROJECTS_ROOT>/"),
+    (rf"C:(\\\\|[\\/])Users(\\\\|[\\/]){_USER_KEYWORD}(\\\\|[\\/])\.gemini(\\\\|[\\/])antigravity", "<APP_DATA_DIR>"),
+    (rf"C:(\\\\|[\\/])Users(\\\\|[\\/]){_USER_KEYWORD}", "<USER_HOME>"),
     (rf"[Cc]:/[Uu]sers/{_USER_KEYWORD}", "<USER_HOME>"),
     (rf"{_USER_KEYWORD}", "mlgitdev"),  # Public GitHub handle
 ]
@@ -56,6 +56,8 @@ SYNC_ITEMS = [
     ("scripts", "scripts"),
     ("build.ps1", "build.ps1"),
     (".gitignore", ".gitignore"),
+    ("models/01-oval-stadium-planter", "examples/01-oval-stadium-planter"),
+    ("models/cherry-tomato-modular-planter", "examples/cherry-tomato-modular-planter"),
 ]
 
 
