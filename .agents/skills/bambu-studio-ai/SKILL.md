@@ -76,6 +76,19 @@ Whenever packing multiple trays/modules and multi-color AMS sub-parts into a sin
    * Especially when repackaging imported `.3mf`/`.stl` parts, always overwrite generic or foreign object names (`object_1.model`, `Ursprüngliches Modell`) with clear, descriptive English names (`<metadata key="name" value="Melitta_Bean_Hopper_Box_60mm"/>`) and name every build plate (`<metadata key="plater_name" value="Tray 1 - ..."/>`). Export both a **1-Plate `.3mf`** (all parts on Plate 1) and a **Multi-Tray `.3mf`** (each part on its own plate).
 6. **3D Exploded & Cutaway Assembly Diagrams (`computed_zorder=False`):**
    * When rendering 3D exploded/cutaway assembly guides with Matplotlib `Axes3D`, always create subplots with `computed_zorder=False` (`fig.add_subplot(..., projection="3d", computed_zorder=False)`) and set `zorder=100` on `ax.text2D(...)` callout badges so 3D `Poly3DCollection` meshes (`zorder=1..6`) never occlude text labels.
+7. **Interactive Exploded Multi-Part 3D HTML Viewer Standard (`scripts/generate_interactive_viewer.py`):**
+   * Every multi-part model must generate an offline, standalone Three.js HTML viewer (`previews/<model-name>_viewer.html`) with:
+     * **0% to 100% Exploded View Slider:** Smooth linear kinematic separation showing how components assemble and separate.
+     * **Component Isolation Checkboxes:** Individual toggles with filament color swatches to view internal cavities and sub-parts.
+     * **Camera Presets:** One-click presets (`Isometric`, `Top`, `Bottom`, `Front`, `Rear`, `Side/Interior`).
+     * **Auto-Spin Strictly OFF by Default:** User retains full manual orbit/pan/zoom control without fighting turntable movement.
+     * **Bambu Lab P2S Bed Cage:** Toggleable $256 \times 256 \times 256\text{ mm}$ build boundary.
+8. **Mandatory 1:1 Preview-to-3MF Correlation Audit Invariant:**
+   * Every model pipeline **must** execute `audit_3mf_correlation(project_3mf_path)` before presenting results to the user.
+   * Prevents discrepancies between preview renders and slicer plate layouts:
+     * **Explicit Plate Instancing:** Asserts every object in `3D/3dmodel.model` has a corresponding `<model_instance>` tag in `<plate>` inside `Metadata/model_settings.config` (prevents parts from disappearing in Bambu Studio).
+     * **Collision & Clearance Verification:** Asserts $> 10\text{ mm}$ (typically $> 25\text{ mm}$) safety clearance between distinct plate items on the $256 \times 256\text{ mm}$ bed.
+     * **Bed Contact & Coordinate Integrity:** Asserts that bed-printed parts touch $Z = 0.00\text{ mm}$ and share the identical orientation as the interactive viewer components.
 
 ---
 

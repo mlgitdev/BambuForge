@@ -211,6 +211,41 @@ Whenever the user requests a fine-tuning adjustment, reports a print fit issue, 
 
 ---
 
+* **Bambu Studio Multi-Part Layout & Plate Visibility Rule:**
+  - **Zero Part Overlap:** In multi-part single-plate `.3mf` projects, never inherit arbitrary nested assembly translation matrices. Assign explicit, discrete bed coordinates to each component in `3D/3dmodel.model` with $> 25\text{ mm}$ safety spacing on the $256 \times 256\text{ mm}$ build plate.
+  - **Explicit Plate Model Instances:** Bambu Studio strictly requires an object to have an entry in `<build>` (`3D/3dmodel.model`), an entry in `<config>` (`Metadata/model_settings.config`), AND an explicit `<model_instance object_id="...">` inside `<plate>` in `Metadata/model_settings.config`. If `<model_instance>` is omitted, Bambu Studio hides the object from the plate view and will not slice it.
+  - **Hinge & Latch Articulation Check:** Always orient latches with their pivot barrels aligned along the principal hinge axis (horizontal along X) and orient base containers upright with the solid floor at $Z = 0.00$ and open cavity facing $+Z$.
+
+---
+
+* **Interactive Multi-Part Exploded 3D Viewer Standard & Mandatory 1:1 Preview-to-3MF Correlation Invariant:**
+  - **Standalone Interactive HTML Viewer:** Every multi-part model must generate an offline Three.js viewer (`previews/<model-name>_viewer.html`) with:
+    1. **0% to 100% Exploded View Slider:** Smooth linear kinematic separation showing how components mate and assemble.
+    2. **Component Isolation Checkboxes:** Toggles with AMS filament color swatches to inspect interior basins and sub-components.
+    3. **Camera Presets:** `Isometric`, `Top`, `Bottom`, `Front`, `Rear`, and `Interior/Cutaway`.
+    4. **Auto-Spin Strictly OFF by Default:** User maintains full manual orbit/pan/zoom control.
+    5. **Bambu Lab P2S Bed Cage:** Toggleable $256 \times 256 \times 256\text{ mm}$ build volume outline.
+  - **1:1 Preview-to-3MF Correlation Invariant (Zero-Mismatch Guardrail):** Previews must never diverge from 3MF exports. Before presenting any model to the user, the agent **MUST** run an automated programmatic audit (`audit_3mf_correlation` in `.agents/skills/bambu-studio-ai/scripts/generate_interactive_viewer.py`) asserting:
+    1. Every component in the viewer is defined in `3D/3dmodel.model` and has an explicit `<model_instance>` tag in `<plate>` inside `Metadata/model_settings.config`.
+    2. All bed-facing parts touch $Z = 0.00\text{ mm}$ and share the identical print orientation as the viewer.
+    3. Discrete, collision-free plate positions ($> 25\text{ mm}$ clearance on the $256 \times 256\text{ mm}$ bed).
+    4. Assembled components meet flush with $0.0\text{ mm}$ gap on mating shoulders and $0.000\text{ mm}^3$ unintended collision.
+
+---
+
+* **Tiered Plate Layout & "By Object" Sequence Exclusion Rule:**
+  - **Toolhead Clearance Buffer ($\ge 100\text{ mm}$ $\Delta Y$):** When placing multiple components on a single Bambu Lab P2S build plate where "Print Sequence: By Object" may be active, arrange parts in discrete front/rear tiers:
+    - **Front Tier ($Y \approx 50 - 80\text{ mm}$):** Main structural enclosures (Bottom Box, Top Lid).
+    - **Rear Tier ($Y \approx 180 - 210\text{ mm}$):** Accessories and hardware (Drying Rack, Front Latch, Snap Hinge Pins).
+    - Maintaining $\ge 100\text{ mm}$ spacing in Y completely eliminates toolhead clearance exclusion bubble overlaps in Bambu Studio.
+  - **Face-Down Inlay Alignment & Non-Mirrored Exterior Text Invariant:**
+    - When printing covers face-down at $Z = 0.00\text{ mm}$, all mating features (rear hinge knuckles and front latches) must be oriented along the identical directional axis as the base enclosure (both hinges at $+Y$).
+    - The coordinate transformation must be engineered so that when looking directly at the exterior surface of the finished part (the face that contacted the bed), text reads left-to-right with zero mirroring.
+  - **Embedded Auxiliary Hardware in Recognized 3MF Sub-Models:**
+    - To guarantee auxiliary 3D printable hardware (snap hinge pins, collars, dowels) are never dropped by Bambu Studio, embed them directly as component objects inside primary recognized sub-models (e.g. `object_24.model`) with explicit `<part>` tags in `Metadata/model_settings.config`.
+
+---
+
 ## 8. Model Registry
 
 | Date | Model Folder | Description | Status | Print Feedback / Notes |
@@ -225,4 +260,4 @@ Whenever the user requests a fine-tuning adjustment, reports a print fit issue, 
 | `2026-10-24` | [`models/06-zen-stepped-pagoda-wave-planter/`](file:///<WORKSPACE_ROOT>/models/06-zen-stepped-pagoda-wave-planter/) | **Style 6: Zen Stepped-Terrace Pagoda Planter** (4 Trays: 6/1/4/2 Colors incl. Sub-Soil Irrigation Arch Straws) | Verified & Exported | 4-Tray Multi-Color `.3mf` |
 | `2026-10-24` | [`models/melitta-coffee-bean-dispenser/`](file:///<WORKSPACE_ROOT>/models/melitta-coffee-bean-dispenser/) | **Melitta Caffeo Solo Coffee Bean Dispenser (`60 mm` Hopper + Geared Rotary Shutter)** — Mid-section `60 mm` height mod + `Ø30.00 mm` 17-tooth geared rotary shutter + named objects in 1-Plate & 3-Tray `.3mf` | Verified & Exported | Read from `imports/`, exported to `models/melitta-coffee-bean-dispenser/exports/` |
 | `2026-10-26` | [`models/muay-thai-boxer-lamp/`](file:///<WORKSPACE_ROOT>/models/muay-thai-boxer-lamp/) | **Muay Thai Boxer E27 Desk Lamp (Option A — 1:1 Photo Match)** — Monolithic single-plate print ($123.2 \times 123.0 \times 223.9\text{ mm}$): Flared pedestal with E27 housing + Voronoi mesh globe + photo-matched fighter with high-guard left glove, forward punch right fist, tousled wet fringe, and hollow optical light chimney beaming through eyes | Verified & Exported | Ready to slice (`.step`, `.3mf`, `.stl` in `exports/`, 4 views in `previews/`) |
-| `2026-10-27` | [`models/mouthguard-box-pegasus/`](file:///<WORKSPACE_ROOT>/models/mouthguard-box-pegasus/) | **Mouthguard / Aligner Travel Case (Pegasus Muay Thai Edition)** — Flush dual-material lid ($0.60\text{ mm}$ Vibrant Orange crest `#FF6A00` + Matte Black shell `#111111`), crisp Star of David, negative-space Hebrew banner (*איגרוף תאילנדי*), internal drainage rack & front snap latch | Verified & Exported | Ready to slice (`.3mf`, `.stl` in `exports/`, 3D viewer & renders in `previews/`) |
+| `2026-10-27` | [`models/mouthguard-box-pegasus/`](file:///<WORKSPACE_ROOT>/models/mouthguard-box-pegasus/) | **Mouthguard / Aligner Travel Case (Pegasus Muay Thai Edition)** — Flush dual-material lid ($0.60\text{ mm}$ Orange crest `#FF6A00` + Matte Black shell), scaled $42\text{ mm}$ emblem ($>3.35\text{ mm}$ hole clearance, zero collision), standalone Horse & Wings assets (`.svg`, `.stl`, `.step`), dual-sided bottom debossing ($0.60\text{ mm}$ outside base + inside basin floor), custom 3D-printable snap hinge pin (zero screws needed), non-mirrored Z-axis $180^\circ$ orientation, and interactive exploded HTML viewer (auto-spin strictly OFF by default) | Verified & Exported | Ready to slice (`.3mf`, `.stl`, `.step` in `exports/`, interactive HTML viewer & diagrams in `previews/`) |
