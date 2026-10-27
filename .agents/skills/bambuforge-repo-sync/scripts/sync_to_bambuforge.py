@@ -52,6 +52,10 @@ SYNC_ITEMS = [
     (".agents/skills/bambu-studio-ai", ".agents/skills/bambu-studio-ai"),
     (".agents/skills/self-learning-cad", ".agents/skills/self-learning-cad"),
     (".agents/skills/bambuforge-repo-sync", ".agents/skills/bambuforge-repo-sync"),
+    (".agents/skills/worktree", ".agents/skills/worktree"),
+    ("scripts", "scripts"),
+    ("build.ps1", "build.ps1"),
+    (".gitignore", ".gitignore"),
 ]
 
 

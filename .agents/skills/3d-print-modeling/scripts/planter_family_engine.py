@@ -529,23 +529,23 @@ def build_extension_riser_4_colors(cfg: PlanterSystemConfig) -> List[Tuple[str, 
                 height=hz,
                 align=(Align.CENTER, Align.CENTER, Align.MIN),
             )
-            # 45-deg tapered shoulder at Z = hz transitioning from pillar_radius to rod_r (support-free!)
-            cone_h = cfg.pillar_radius - rod_r
+            # Flush mating shoulder at Z = hz: Pillar ends flat to meet Base Planter rim flush.
+            # Stress-relief root fillet/chamfer (0.8mm 45-deg) fits completely within socket's 1.4mm lead-in.
             with Locations((0, 0, hz)):
                 Cone(
-                    bottom_radius=cfg.pillar_radius,
+                    bottom_radius=rod_r + 0.8,
                     top_radius=rod_r,
-                    height=cone_h,
+                    height=0.8,
                     align=(Align.CENTER, Align.CENTER, Align.MIN),
                 )
-            # Integrated Male Stacking Rod (Ø6.20mm OD, protruding up to Z = hz + riser_rod_len)
-            with Locations((0, 0, hz)):
+            # Straight Integrated Male Stacking Rod (Ø6.20mm OD, fits Ø6.50mm socket with 0.3mm diametral clearance)
+            with Locations((0, 0, hz + 0.8)):
                 Cylinder(
                     radius=rod_r,
-                    height=cfg.riser_rod_len - 1.2,
+                    height=cfg.riser_rod_len - 2.0,
                     align=(Align.CENTER, Align.CENTER, Align.MIN),
                 )
-            # 45-deg lead-in tip chamfer at top of locking rod so it self-centers into the 4 base holes
+            # 45-deg self-centering lead-in tip chamfer at top of locking rod
             with Locations((0, 0, hz + cfg.riser_rod_len - 1.2)):
                 Cone(
                     bottom_radius=rod_r,

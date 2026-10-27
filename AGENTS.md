@@ -42,13 +42,20 @@ Every model request is isolated in its own dedicated folder under `models/`:
 ```text
 <WORKSPACE_ROOT>\
 ├── AGENTS.md                          # Master rules, printer specs, model registry & learned preferences
+├── build.ps1                          # Root task runner & worktree orchestrator
+├── .gitignore                         # Excludes .venv/, .worktrees/, temp slicer files
 ├── .venv/                             # Dedicated Python 3.11 environment (build123d, trimesh, matplotlib)
+├── .worktrees/                        # Isolated git worktrees for parallel agents & tasks
+├── scripts/                           # Cross-platform automation scripts
+│   ├── worktree.ps1                   # PowerShell worktree manager (new, list, remove, merge-back, sync)
+│   └── worktree.sh                    # Bash worktree manager (macOS/Linux)
 ├── .agents/
 │   └── skills/
 │       ├── 3d-print-modeling/         # Parametric build123d / FreeCAD FDM design skill + helper library
 │       ├── bambu-studio-ai/           # Local zero-subscription CAD-to-Bambu Studio pipeline & analyzer
 │       ├── self-learning-cad/         # Continuous preference capture, tolerance tuning & gap-closing skill
-│       └── bambuforge-repo-sync/      # Automated bidirectional skill sync with public BambuForge repo
+│       ├── bambuforge-repo-sync/      # Automated bidirectional skill sync with public BambuForge repo
+│       └── worktree/                  # Multi-agent task isolation & git worktree manager skill
 └── models/
     └── <model-name>/                  # Dedicated directory per requested 3D model
         ├── <model-name>.py            # Parametric build123d / FreeCAD Python source
@@ -108,16 +115,60 @@ All models created in this workspace **must** be engineered to print with **zero
 
 ---
 
-## 5. Self-Learning Loop & Continuous Adaptation
+## 5. Git Worktree Protocol & Multi-Agent Task Isolation (Mandatory)
+
+The repository root checkout on `main` is considered **clean and stable**. When multiple AI agents are operating concurrently or when developing separate models/features:
+
+### 1. Mandatory Worktree for Concurrent or Isolated Work
+- If another agent is actively working in the workspace (or to isolate any new model, CAD engine modification, or experiment), **never work directly in the root checkout**.
+- Always spawn a dedicated git worktree under `.worktrees/`:
+  ```powershell
+  # Windows PowerShell
+  .\scripts\worktree.ps1 new model/<descriptor>
+  # Or via task runner:
+  .\build.ps1 -Task worktree-new -Branch model/<descriptor>
+  ```
+  ```bash
+  # Linux / macOS
+  ./scripts/worktree.sh new model/<descriptor>
+  ```
+
+### 2. Dual-Remote Topology
+- **Local Working Studio (`3D-Automation`):** Contains the primary Python `.venv`, `models/`, and local worktrees.
+- **Sibling Remote (`bambuforge`):** Points to local sibling repo `../BambuForge`. Fetch anytime with:
+  ```powershell
+  .\scripts\worktree.ps1 sync-remote bambuforge
+  ```
+- **Upstream GitHub (`origin`):** Points to `https://github.com/mlgitdev/BambuForge.git` for PRs and issue correlation.
+
+### 3. Shared Environment & Toolchain Inheritance
+- Worktrees do **NOT** duplicate `.venv/`.
+- Every worktree automatically inherits the root Python environment at `..\..\.venv\Scripts\python.exe` (build123d 0.13, OpenCascade 8.0, Trimesh, Matplotlib).
+- All CAD generators and slicing scripts must run using this shared interpreter.
+
+### 4. Merge-Back & Cleanup Lifecycle
+- Once a model or feature is generated, verified, and committed:
+  ```powershell
+  # Merge back into main
+  .\scripts\worktree.ps1 merge-back model/<descriptor> main
+
+  # Safely remove the worktree
+  .\scripts\worktree.ps1 remove model/<descriptor>
+  ```
+- For full operational workflows, consult the [`worktree` skill](.agents/skills/worktree/SKILL.md).
+
+---
+
+## 6. Self-Learning Loop & Continuous Adaptation
 
 Whenever the user requests a fine-tuning adjustment, reports a print fit issue, or expresses a preference:
 1. **Immediate Action:** Apply the change to the active model in `models/<model-name>/`.
-2. **Gap Analysis & Persistence:** Update `.agents/skills/self-learning-cad/references/learned-preferences.md` and section **6. Learned User Preferences** below so the agent never repeats the same mistake and automatically applies the preference to all future models.
+2. **Gap Analysis & Persistence:** Update `.agents/skills/self-learning-cad/references/learned-preferences.md` and section **7. Learned User Preferences** below so the agent never repeats the same mistake and automatically applies the preference to all future models.
 3. **Workflow Invocation:** Always consult `.agents/skills/3d-print-modeling/SKILL.md`, `.agents/skills/bambu-studio-ai/SKILL.md`, and `.agents/skills/self-learning-cad/SKILL.md` when designing, analyzing, or refining models.
 
 ---
 
-## 6. Learned User Preferences (Auto-Updated)
+## 7. Learned User Preferences (Auto-Updated)
 
 * **Printer:** Bambu Lab P2S (`256 × 256 × 256 mm`).
 * **CAD & Visual Toolchain:**
@@ -126,13 +177,14 @@ Whenever the user requests a fine-tuning adjustment, reports a print fit issue, 
   * **CADCraft (`C:\Program Files\CADCraft\cadcraft.exe` & `cadcraft-cli.exe`):** Pure-Rust AutoCAD-style 2D/drafting tool with built-in headless CLI (`cadcraft-cli run`), `.scr` scripting, and native MCP server (`cadcraft-cli mcp --launch`) for 2D `.dxf` profile drafting that `build123d` (`ezdxf`) can extrude into 3D models.
   * **Bambu Studio (`C:\Program Files\Bambu Studio\bambu-studio.exe`):** Target slicer and multi-plate `.3mf` packager.
 * **Slicer & Multi-Plate `.3mf` Workflow:** Always pack multi-module sets onto **separate build plates (trays)** inside a single `.3mf` project pre-configured for the **Bambu Lab P2S (`0.4 mm` nozzle, Supports = OFF)** using Bambu Studio's **2-column plate grid** (`Plate 1 = (128, 128)`, `Plate 2 = (435.2, 128)`, `Plate 3 = (128, -179.2)`), 6 flattened filament JSON profiles (`--load-filaments`), and a final `bambu-studio.exe --export-3mf` verification round-trip.
+* **Multi-Agent Task Isolation & Worktree Rule:** Whenever another agent is running or when developing a new model/feature, always work inside an isolated worktree under `.worktrees/` created via `.\scripts\worktree.ps1 new <branch>`. Inherit the root `.venv` without duplicating dependencies, and treat the sibling `../BambuForge` folder as remote `bambuforge` and GitHub as `origin`.
 * **Operational Guardrail:** Never run slow, unmonitored `urllib` downloads for large multi-hundred-MB installers; always check installed binaries first or use fast CLI tools with explicit timeouts.
 * **Multi-Color AMS Segmentation Rule:** Partition planter models into distinct, non-overlapping B-Rep color sub-parts inside the `.3mf` and `.step` assemblies:
   * **Base Planter (`6` Colors):** 3 structural wall layers + horizontal connecting strips/belts + top rim collar + 4 corner edge columns.
   * **Drip Saucer Tray (`1` Color):** Monolithic watertight saucer.
   * **Extension Riser (`4` Colors + Print-Orientation Optimization):** Lower wall layer + upper wall layer + connecting belt/rim + 4 corner columns with **integrated male locking rods**. Always orient the Extension Riser **inverted (`180°` on its flat top rim at `Z = 0`)** so the 4 integrated locking rods print pointing straight UP (`+Z`) with zero supports.
 * **Project Organization & Read-Only `imports/` Rule:**
-  * Every requested or modified model must reside in its own dedicated subdirectory under `models/<model-name>/` and be indexed in Section 7 below.
+  * Every requested or modified model must reside in its own dedicated subdirectory under `models/<model-name>/` and be indexed in Section 8 below.
   * The `imports/` directory is **strictly read-only input** (for user-supplied MakerWorld / third-party `.3mf`, `.stl`, `.step` files). Never write output files back into `imports/`; always output modified models, previews, and `.3mf` packages to `models/<model-name>/exports/` and `previews/`.
   * When importing/modifying third-party `.3mf` or `.stl` assemblies, always assign clean, descriptive human-readable **object names** (`<metadata key="name" value="..."/>`) and **plate names** (`<metadata key="plater_name" value="..."/>`) inside `Metadata/model_settings.config`.
   * **Mandatory Illustrated Assembly & Usage Guide (`ASSEMBLY_GUIDE.md`):** Every model folder under `models/<model-name>/` must include an `ASSEMBLY_GUIDE.md` accompanied by rendered 3D exploded/cutaway assembly diagrams in `previews/` explaining step-by-step how all parts fit together, their recommended slicing settings (`wall_loops`, `sparse_infill_density`, `sparse_infill_pattern`, and `100%` infill modifiers), filament material guidance, and how any functional accessories (like wicking straws, cloths/cords, or shutters) are used. Write all documentation in a **clean, general, public-shareable product manual tone** (no personal references, user timelines, or chat-specific remarks).
@@ -142,7 +194,7 @@ Whenever the user requests a fine-tuning adjustment, reports a print fit issue, 
 
 ---
 
-## 7. Model Registry
+## 8. Model Registry
 
 | Date | Model Folder | Description | Status | Print Feedback / Notes |
 | :--- | :--- | :--- | :--- | :--- |
@@ -155,3 +207,5 @@ Whenever the user requests a fine-tuning adjustment, reports a print fit issue, 
 | `2026-10-24` | [`models/05-hexagonal-honeycomb-tessellation-planter/`](file:///<WORKSPACE_ROOT>/models/05-hexagonal-honeycomb-tessellation-planter/) | **Style 5: Modular Elongated Hexagonal Honeycomb Planter** (3 Trays: 6/1/4 Colors, no arch straws per user request) | Verified & Exported | 3-Tray Multi-Color `.3mf` |
 | `2026-10-24` | [`models/06-zen-stepped-pagoda-wave-planter/`](file:///<WORKSPACE_ROOT>/models/06-zen-stepped-pagoda-wave-planter/) | **Style 6: Zen Stepped-Terrace Pagoda Planter** (4 Trays: 6/1/4/2 Colors incl. Sub-Soil Irrigation Arch Straws) | Verified & Exported | 4-Tray Multi-Color `.3mf` |
 | `2026-10-24` | [`models/melitta-coffee-bean-dispenser/`](file:///<WORKSPACE_ROOT>/models/melitta-coffee-bean-dispenser/) | **Melitta Caffeo Solo Coffee Bean Dispenser (`60 mm` Hopper + Geared Rotary Shutter)** — Mid-section `60 mm` height mod + `Ø30.00 mm` 17-tooth geared rotary shutter + named objects in 1-Plate & 3-Tray `.3mf` | Verified & Exported | Read from `imports/`, exported to `models/melitta-coffee-bean-dispenser/exports/` |
+| `2026-10-26` | [`models/muay-thai-boxer-lamp/`](file:///<WORKSPACE_ROOT>/models/muay-thai-boxer-lamp/) | **Muay Thai Boxer E27 Desk Lamp (Option A — 1:1 Photo Match)** — Monolithic single-plate print ($123.2 \times 123.0 \times 223.9\text{ mm}$): Flared pedestal with E27 housing + Voronoi mesh globe + photo-matched fighter with high-guard left glove, forward punch right fist, tousled wet fringe, and hollow optical light chimney beaming through eyes | Verified & Exported | Ready to slice (`.step`, `.3mf`, `.stl` in `exports/`, 4 views in `previews/`) |
+| `2026-10-27` | [`models/mouthguard-box-pegasus/`](file:///<WORKSPACE_ROOT>/models/mouthguard-box-pegasus/) | **Mouthguard / Aligner Travel Case (Pegasus Muay Thai Edition)** — Flush dual-material lid ($0.60\text{ mm}$ Vibrant Orange crest `#FF6A00` + Matte Black shell `#111111`), crisp Star of David, negative-space Hebrew banner (*איגרוף תאילנדי*), internal drainage rack & front snap latch | Verified & Exported | Ready to slice (`.3mf`, `.stl` in `exports/`, 3D viewer & renders in `previews/`) |
