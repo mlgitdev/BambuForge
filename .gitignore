@@ -17,6 +17,8 @@ _p2s_*.json
 *.FCBak
 *.step.bak
 *.stl.bak
+_temp_scad/
+**/_temp_scad/
 
 # System & Editor
 .DS_Store
