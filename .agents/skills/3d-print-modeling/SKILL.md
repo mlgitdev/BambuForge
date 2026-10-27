@@ -52,12 +52,8 @@ Read [fdm-design-principles.md](./references/fdm-design-principles.md) and impor
    * Light / cosmetic: `1.25 mm` (3 perimeters)
    * Standard functional: `1.65 mm – 2.0 mm` (4–5 perimeters)
    * Heavy-duty structural: `2.5 mm – 3.2 mm` (6+ perimeters)
-8. **Stackable Modules with Integrated Locking Pins (Flush Planar Interface & Zero Sanding):**
-   * When a stackable riser/module requires downward-pointing male alignment rods or pins that plug into a base below:
-     * Design the receiving module with a flat top rim and cylindrical female sockets featuring a `1.4 mm` 45° lead-in chamfer.
-     * Design the stackable module with a **flat planar landing shoulder** that seats 100% flush against the receiving rim (`0.0 mm` gap).
-     * Orient the part **inverted (`180°` around X/Y so the top rim sits at `Z = 0`)** so the locking pins print pointing straight UP (`+Z`) directly on top of the column shoulders with **zero supports**.
-     * **Never** add a full-width conical taper between the column and the pin unless the receiving socket has an identical matching counterbore. Use only a small root stress-relief fillet (`0.8 mm` 45°) that nests completely inside the socket's lead-in chamfer, and self-centering `1.2 mm` tip chamfers.
+8. **Stackable Modules with Integrated Locking Pins (Print-Orientation Inversion):**
+   * When a stackable riser/module requires downward-pointing male alignment rods or pins that plug into a base below, design its top rim completely flat and **orient the part inverted (`180°` around X/Y so the top rim sits at `Z = 0`)** with a `45°` conical transition under each pin. This allows the integrated locking rods to print pointing straight UP (`+Z`) with **zero supports**.
 9. **`build123d` Builder Context Isolation:**
    * Never call a helper function that opens its own `with BuildPart():` inside an active `with BuildPart():` block (this resets the outer builder context). Construct helper `Part` solids outside the `with BuildPart():` block and combine them using explicit boolean operators (`+` union, `-` cut, `&` intersect).
 10. **Multi-Color AMS Boolean Segmentation:**
@@ -65,30 +61,7 @@ Read [fdm-design-principles.md](./references/fdm-design-principles.md) and impor
 
 ---
 
-## 3. PNG-to-SVG Vectorization & CAD Importing Pipeline (`png_to_svg.py`)
-
-When the user provides raster graphics (PNG, JPG, BMP) in `imports/` or requests logo/emblem embossing, engraving, or dual-material inlays:
-1. **Transform Raster to Precision SVG:**
-   ```powershell
-   python ".agents\skills\3d-print-modeling\scripts\png_to_svg.py" "imports\MouthPeice-P2S\Pegasus_FRONT_LOGO1.png" -o "previews\pegasus.svg" --width-mm 50 --center
-   ```
-   * **`--channel alpha`**: Isolates transparent background silhouettes (ideal for transparent logos).
-   * **`--channel luminance`**: Automatically segments dark foreground graphics from light backgrounds (Otsu thresholding).
-   * **`--colormode color`**: Generates full multi-color stacked SVG layers via Rust-accelerated `vtracer`.
-   * **`--width-mm` / `--height-mm`**: Scales SVG geometry directly into physical CAD millimetres.
-   * **`--center`**: Centers the geometry bounding box at `(0, 0)` for immediate alignment with CAD lids and faces.
-2. **Direct Python CAD Integration (`build123d`):**
-   ```python
-   from png_to_svg import image_to_build123d_faces
-   import build123d as b3d
-
-   faces = image_to_build123d_faces("logo.png", target_width_mm=50.0, center_origin=True)
-   logo_solid = b3d.extrude(faces[0], amount=1.2)  # 1.2mm 3D badge/inlay ready for booleans!
-   ```
-
----
-
-## 4. Modifying Imported Third-Party `.3mf` / `.stl` Models (`imports/` Workflow)
+## 3. Modifying Imported Third-Party `.3mf` / `.stl` Models (`imports/` Workflow)
 
 When the user provides downloaded MakerWorld / Printables files in `imports/<folder>/`:
 

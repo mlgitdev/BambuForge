@@ -55,7 +55,8 @@ Every model request is isolated in its own dedicated folder under `models/`:
 │       ├── bambu-studio-ai/           # Local zero-subscription CAD-to-Bambu Studio pipeline & analyzer
 │       ├── self-learning-cad/         # Continuous preference capture, tolerance tuning & gap-closing skill
 │       ├── bambuforge-repo-sync/      # Automated bidirectional skill sync with public BambuForge repo
-│       └── worktree/                  # Multi-agent task isolation & git worktree manager skill
+│       ├── worktree/                  # Multi-agent task isolation & git worktree manager skill
+│       └── png-to-svg/                # Zero-bleed raster-to-SVG vectorization & straight-edge CAD engine
 └── models/
     └── <model-name>/                  # Dedicated directory per requested 3D model
         ├── <model-name>.py            # Parametric build123d / FreeCAD Python source
@@ -188,18 +189,12 @@ Whenever the user requests a fine-tuning adjustment, reports a print fit issue, 
   * The `imports/` directory is **strictly read-only input** (for user-supplied MakerWorld / third-party `.3mf`, `.stl`, `.step` files). Never write output files back into `imports/`; always output modified models, previews, and `.3mf` packages to `models/<model-name>/exports/` and `previews/`.
   * When importing/modifying third-party `.3mf` or `.stl` assemblies, always assign clean, descriptive human-readable **object names** (`<metadata key="name" value="..."/>`) and **plate names** (`<metadata key="plater_name" value="..."/>`) inside `Metadata/model_settings.config`.
   * **Mandatory Illustrated Assembly & Usage Guide (`ASSEMBLY_GUIDE.md`):** Every model folder under `models/<model-name>/` must include an `ASSEMBLY_GUIDE.md` accompanied by rendered 3D exploded/cutaway assembly diagrams in `previews/` explaining step-by-step how all parts fit together, their recommended slicing settings (`wall_loops`, `sparse_infill_density`, `sparse_infill_pattern`, and `100%` infill modifiers), filament material guidance, and how any functional accessories (like wicking straws, cloths/cords, or shutters) are used. Write all documentation in a **clean, general, public-shareable product manual tone** (no personal references, user timelines, or chat-specific remarks).
+* **Zero-Bleed Raster-to-SVG Vectorization & Straight-Edge Invariant:**
+  - When converting raster artwork, logos, or emblems to SVG, use **Option A (`hierarchical="cutout"`)** in VTracer so adjacent colors fit like non-overlapping jigsaw puzzle pieces with zero background bleeding.
+  - When converting geometric emblems containing straight lines (e.g. Star of David / Magen David, text banners, polygonal shields), use **Option B (`--straight-edges` / Douglas-Peucker contour simplification)** with oriented wires (CCW outer boundaries, CW inner holes). This eliminates bezier curve wobble and guarantees mathematical straight line segments between corners.
 * **Bulky Structural Model Speed Rule (`0.28 mm` Draft vs `0.20 mm` Standard):** For large or bulky functional objects (planters, saucers, storage bins, structural frames) where miniature resolution is not required, precision is secondary to throughput. Proactively ask the user their speed/quality preference during intake:
   - `0.20 mm Standard`: Fine surface finish.
   - `0.28 mm Extra Draft`: **~35–45% print time reduction** with stronger interlayer bonding. Ensure vertical dimensions, Z-chamfers, and sacrificial bridges match `0.28 mm` when selected. Document both print time estimates in `ASSEMBLY_GUIDE.md`.
-* **Stackable Modular Pin & Socket Joint Rule (Flush Planar Contact):** When designing male alignment dowels or stacking locking rods on stackable modular modules (e.g. Extension Risers, stackable bins, interlocking tiers):
-  - Male pins must always protrude directly from a **flat planar landing shoulder** that mates flush against the flat landing face of the receiving module.
-  - **NEVER** introduce a full-width conical taper between the column shoulder and the pin unless the mating female socket has an identical, matching conical counterbore recess. A conical taper colliding with a flat rim creates an air gap (e.g. 8.4mm) that prevents snapping down and forces the user to manually sand out the connection.
-  - Use only a small root stress-relief fillet or chamfer ($\le 0.8\text{ mm}$ 45°) that fits entirely inside the female socket's lead-in chamfer ($\ge 1.4\text{ mm}$ 45°).
-  - Provide $0.3\text{ mm}$ diametral clearance (e.g. $\varnothing 6.20\text{ mm}$ male rod into $\varnothing 6.50\text{ mm}$ socket) and a $1.2\text{ mm}$ 45° self-centering lead-in tip chamfer for effortless slide-in fit.
-* **Automated Raster-to-Vector (PNG-to-SVG) CAD Transformation Capability:**
-  - Raster artwork (logos, silhouettes, emblems, scans) supplied in `imports/` or via chat must be vectorized into precision scalable SVGs using the integrated `png_to_svg.py` engine (`.agents/skills/3d-print-modeling/scripts/png_to_svg.py`).
-  - Supports automatic alpha mask isolation (`--channel alpha`), Otsu luminance thresholding (`--channel luminance`), and multi-color stacked vectorization (`--colormode color`).
-  - Scales coordinates directly to physical millimetres (`--width-mm`, `--height-mm`) and centers at origin (`--center`) so `build123d.import_svg(svg_path)` directly produces clean 2D `Face` objects ready for 3D extrusion, embossing, and boolean subtraction.
 
 ---
 

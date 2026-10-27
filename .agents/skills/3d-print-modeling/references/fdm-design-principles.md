@@ -68,29 +68,3 @@ For large, volumetric models (planters, pots, saucers, stacking extensions, stor
    bridge_thickness = layer_height
    ```
 4. **Mechanical Advantage:** `0.28 mm` layers provide thicker extruded beads with greater thermal retention, yielding superior layer-to-layer weld strength, impact resistance, and water retention for hydroponic and planter applications.
-
----
-
-## 6. Stackable Modular Alignment Joints (Flush Planar Interface & Zero Sanding)
-
-When designing male alignment rods or stacking pins for stackable modular parts (e.g. extension risers, interlocking tiers):
-1. **Flat Planar Shoulder Rule:** Male pins must protrude from a flat planar landing shoulder that meets the receiving module's top rim with 100% planar contact (`0.0 mm` gap).
-2. **Never Add Full-Width Conical Transitions:** Do not taper the entire column down to the pin radius. In an inverted print orientation, a smaller pin on top of a larger column is already 100% supported by the column beneath it and requires zero supports. Adding a full-width cone causes severe mating collisions against flat rims.
-3. **Root Stress-Relief Fillet:** Provide a small `0.8 mm` 45° chamfer/fillet at the pin root. This eliminates notch stress without colliding, because the receiving socket incorporates a `1.4 mm` lead-in chamfer.
-4. **Clearance & Self-Centering:** Provide `0.30 mm` diametral clearance (e.g. `Ø6.20 mm` pin in `Ø6.50 mm` hole) and a `1.2 mm` 45° self-centering lead-in tip chamfer for effortless insertion.
-
----
-
-## 7. PNG-to-SVG Vectorization for 3D Emblems & Bambu Modifiers (`png_to_svg.py`)
-
-Raster images (PNG logos, silhouettes, scans) can be imported into CAD scripts using `png_to_svg.py`:
-- **CLI Usage:** `python .agents/skills/3d-print-modeling/scripts/png_to_svg.py input.png -o output.svg --width-mm 50 --center`
-- **Build123d Direct API:**
-  ```python
-  from png_to_svg import image_to_build123d_faces
-  import build123d as b3d
-
-  faces = image_to_build123d_faces("emblem.png", target_width_mm=50.0, center_origin=True)
-  solid_inlay = b3d.extrude(faces[0], amount=0.8)
-  ```
-- **Mask Control:** Use `--channel alpha` for transparent PNGs, `--channel luminance` for dark/light figure extraction, and `--colormode color` for multi-color stacked vectorization.
