@@ -94,9 +94,14 @@ class PlanterSystemConfig:
 
     # Tray 3: Inverted Stackable Extension Riser + 4 Integrated Male Locking Rods
     riser_body_h: float = 140.0       # Main riser body height (Z = 0..140mm)
-    riser_skirt_h: float = 9.0        # Interlocking male skirt height
-    riser_rod_len: float = 28.0       # Length of the 4 integrated locking rods protruding at +Z
-    riser_rod_od: float = 6.20        # Outer diameter of integrated locking rods (fits 6.50mm hole!)
+    riser_skirt_h: float = 7.0        # Interlocking male skirt height (Red contour)
+    skirt_clearance: float = 0.35     # 0.35mm per-side clearance
+    lego_boss_r: float = 7.5          # Circular Lego boss radius (Yellow contour)
+    lego_boss_h: float = 3.0          # Circular Lego boss height (protrudes past column shoulder)
+    lego_socket_clr_r: float = 0.35   # Female Lego socket radial clearance (socket_r = 7.85mm)
+    lego_socket_clr_z: float = 0.5    # Female Lego socket vertical clearance (socket_d = 3.5mm)
+    riser_rod_len: float = 24.0       # Length of integrated locking rods protruding past Lego boss
+    riser_rod_od: float = 6.20        # Outer diameter of integrated locking rods (fits 6.70mm hole!)
     riser_rod_id: float = 4.50        # Inner bore through integrated rods for 4mm metal wire stake
 
 
@@ -227,26 +232,69 @@ def make_profile_band(
     return band.part
 
 
-def make_dual_rod_cutter(cfg: PlanterSystemConfig) -> Part:
-    z_top = cfg.base_height_z
-    r6 = cfg.rod_6mm_bore_d / 2.0
+def make_stacking_female_cutter(cfg: PlanterSystemConfig, z_top: float) -> Part:
+    """
+    Cuts the matching female receiving sockets into the Base Planter (and Riser top)
+    so the male skirt (Red contour), circular Lego boss (Yellow contour), and locking rod
+    nest inside with 100% flush planar contact (0.0mm outer seam gap, zero sanding).
+    """
+    skirt_clr = cfg.skirt_clearance
+    boss_r = cfg.lego_boss_r
+    boss_h = cfg.lego_boss_h
+    boss_clr_r = cfg.lego_socket_clr_r
+    boss_clr_z = cfg.lego_socket_clr_z
+    rod_hole_r = cfg.rod_6mm_bore_d / 2.0
     r4 = cfg.rod_4mm_bore_d / 2.0
-    lead_in = 1.4
-    transition_h = r6 - r4
 
-    z_upper_bot = z_top - cfg.rod_6mm_depth
-    z_trans_bot = z_upper_bot - transition_h
-    z_lower_bot = z_trans_bot - cfg.rod_4mm_depth
+    z_skirt_pocket = z_top - cfg.riser_skirt_h - boss_clr_z  # Female skirt pocket depth
+    z_boss_pocket = z_skirt_pocket - boss_h - boss_clr_z     # Female Lego boss socket depth
+    z_rod_pocket = z_boss_pocket - cfg.rod_6mm_depth        # 60mm deep rod bore
+    z_stake_bot = z_rod_pocket - cfg.rod_4mm_depth           # Lower stake bore
 
     with BuildPart() as cutter:
-        with Locations((0, 0, z_lower_bot)):
-            Cylinder(radius=r4, height=cfg.rod_4mm_depth + 0.1, align=(Align.CENTER, Align.CENTER, Align.MIN))
-        with Locations((0, 0, z_trans_bot)):
-            Cone(bottom_radius=r4, top_radius=r6, height=transition_h, align=(Align.CENTER, Align.CENTER, Align.MIN))
-        with Locations((0, 0, z_upper_bot)):
-            Cylinder(radius=r6, height=cfg.rod_6mm_depth + 0.1, align=(Align.CENTER, Align.CENTER, Align.MIN))
-        with Locations((0, 0, z_top - lead_in)):
-            Cone(bottom_radius=r6, top_radius=r6 + lead_in + 0.4, height=lead_in + 0.4, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        # 1. Corner column rebate matching the male skirt (Red contour) & pillar shoulder
+        with Locations((0, 0, z_skirt_pocket)):
+            Cylinder(
+                radius=cfg.pillar_radius + skirt_clr,
+                height=cfg.riser_skirt_h + boss_clr_z + 0.1,
+                align=(Align.CENTER, Align.CENTER, Align.MIN)
+            )
+        # 2. Female Lego boss socket (Yellow contour)
+        with Locations((0, 0, z_boss_pocket)):
+            Cylinder(
+                radius=boss_r + boss_clr_r,
+                height=boss_h + boss_clr_z + 0.1,
+                align=(Align.CENTER, Align.CENTER, Align.MIN)
+            )
+            # Lead-in chamfer
+            with Locations((0, 0, boss_h + boss_clr_z - 0.8)):
+                Cone(
+                    bottom_radius=boss_r + boss_clr_r,
+                    top_radius=boss_r + boss_clr_r + 0.8,
+                    height=0.8,
+                    align=(Align.CENTER, Align.CENTER, Align.MIN)
+                )
+        # 3. Rod bore (Ø6.50mm / 6.70mm)
+        with Locations((0, 0, z_rod_pocket)):
+            Cylinder(
+                radius=rod_hole_r,
+                height=cfg.rod_6mm_depth + 0.1,
+                align=(Align.CENTER, Align.CENTER, Align.MIN)
+            )
+            with Locations((0, 0, cfg.rod_6mm_depth - 1.2)):
+                Cone(
+                    bottom_radius=rod_hole_r,
+                    top_radius=rod_hole_r + 1.2,
+                    height=1.2,
+                    align=(Align.CENTER, Align.CENTER, Align.MIN)
+                )
+        # 4. Continuous stake bore (Ø4.45mm)
+        with Locations((0, 0, z_stake_bot)):
+            Cylinder(
+                radius=r4,
+                height=cfg.rod_4mm_depth + 0.1,
+                align=(Align.CENTER, Align.CENTER, Align.MIN)
+            )
     return cutter.part
 
 
@@ -347,10 +395,10 @@ def build_base_planter_6_colors(cfg: PlanterSystemConfig) -> List[Tuple[str, int
 
     full_part = full_part + pillars.part
 
-    # 5. Cut the 4 Dual-Stage (6mm & 4mm) Metal Rod Sockets
-    rod_cutter = make_dual_rod_cutter(cfg)
+    # 5. Cut the 4 Stacking Female Sockets (Skirt rebate, Lego boss socket & rod holes)
+    stack_cutter = make_stacking_female_cutter(cfg, z_top=hz)
     for x, y in corner_pts:
-        full_part = full_part - rod_cutter.moved(Location((x, y, 0)))
+        full_part = full_part - stack_cutter.moved(Location((x, y, 0)))
 
     # 6. Cut Drainage Holes & Bottom Runoff Arches
     drain_pts = [(dx, dy) for dx in (-64.0, 0.0, 64.0) for dy in (-42.0, 0.0, 42.0)]
@@ -491,9 +539,10 @@ def build_extension_riser_4_colors(cfg: PlanterSystemConfig) -> List[Tuple[str, 
     )
 
     # Upper Interlocking Male Skirt (`Z = hz - riser_skirt_h` to `hz`) that plugs inside Base Planter
-    skirt_out_x = lx - 2.0 * wt - 0.7
-    skirt_out_y = wy - 2.0 * wt - 0.7
-    skirt_out_r = max(4.0, cr - wt - 0.35)
+    skirt_clr = cfg.skirt_clearance
+    skirt_out_x = lx - 2.0 * wt - 2.0 * skirt_clr
+    skirt_out_y = wy - 2.0 * wt - 2.0 * skirt_clr
+    skirt_out_r = max(4.0, cr - wt - skirt_clr)
     z_skirt_base = hz - cfg.riser_skirt_h
 
     with BuildPart() as male_skirt:
@@ -515,12 +564,14 @@ def build_extension_riser_4_colors(cfg: PlanterSystemConfig) -> List[Tuple[str, 
     with BuildPart() as open_bore:
         with BuildSketch(Plane.XY.offset(-1.0)):
             _sketch_2d_profile(inner_style, riser_in_x, riser_in_y, riser_in_r)
-        extrude(amount=hz + 5.0)
+        extrude(amount=hz + cfg.lego_boss_h + cfg.riser_rod_len + 5.0)
 
     full_riser = full_riser - open_bore.part
 
-    # Add 4 Full-Height Corner Columns + 4 Integrated Male Locking Rods pointing straight UP (+Z)!
+    # Add 4 Full-Height Corner Columns + Circular Lego Bosses (Yellow contour) + Male Locking Pins!
     rod_r = cfg.riser_rod_od / 2.0
+    boss_r = cfg.lego_boss_r
+    boss_h = cfg.lego_boss_h
     with BuildPart() as pillars_and_rods:
         with Locations(corner_pts):
             # Main corner column from Z = 0 to Z = hz
@@ -529,24 +580,22 @@ def build_extension_riser_4_colors(cfg: PlanterSystemConfig) -> List[Tuple[str, 
                 height=hz,
                 align=(Align.CENTER, Align.CENTER, Align.MIN),
             )
-            # Flush mating shoulder at Z = hz: Pillar ends flat to meet Base Planter rim flush.
-            # Stress-relief root fillet/chamfer (0.8mm 45-deg) fits completely within socket's 1.4mm lead-in.
+            # Circular Lego Boss (Yellow contour) from Z = hz to hz + boss_h (snaps slightly inside!)
             with Locations((0, 0, hz)):
-                Cone(
-                    bottom_radius=rod_r + 0.8,
-                    top_radius=rod_r,
-                    height=0.8,
+                Cylinder(
+                    radius=boss_r,
+                    height=boss_h,
                     align=(Align.CENTER, Align.CENTER, Align.MIN),
                 )
-            # Straight Integrated Male Stacking Rod (Ø6.20mm OD, fits Ø6.50mm socket with 0.3mm diametral clearance)
-            with Locations((0, 0, hz + 0.8)):
+            # Straight Integrated Male Stacking Rod (Ø6.20mm OD)
+            with Locations((0, 0, hz + boss_h)):
                 Cylinder(
                     radius=rod_r,
-                    height=cfg.riser_rod_len - 2.0,
+                    height=cfg.riser_rod_len - 1.2,
                     align=(Align.CENTER, Align.CENTER, Align.MIN),
                 )
             # 45-deg self-centering lead-in tip chamfer at top of locking rod
-            with Locations((0, 0, hz + cfg.riser_rod_len - 1.2)):
+            with Locations((0, 0, hz + boss_h + cfg.riser_rod_len - 1.2)):
                 Cone(
                     bottom_radius=rod_r,
                     top_radius=rod_r - 0.8,
@@ -562,15 +611,41 @@ def build_extension_riser_4_colors(cfg: PlanterSystemConfig) -> List[Tuple[str, 
         with Locations([(x, y, -1.0) for (x, y) in corner_pts]):
             Cylinder(
                 radius=cfg.riser_rod_id / 2.0,
-                height=hz + cfg.riser_rod_len + 5.0,
+                height=hz + boss_h + cfg.riser_rod_len + 5.0,
                 align=(Align.CENTER, Align.CENTER, Align.MIN),
             )
     full_riser = full_riser - stake_bores.part
 
+    # Cut matching female sockets into Riser's flat rim at Z = 0 (top when stacked) so multiple risers can nest!
+    boss_clr_r = cfg.lego_socket_clr_r
+    boss_clr_z = cfg.lego_socket_clr_z
+    rod_hole_r = cfg.rod_6mm_bore_d / 2.0
+    with BuildPart() as riser_fem_sockets:
+        with Locations(corner_pts):
+            # Column skirt rebate: Z = 0 .. (riser_skirt_h + boss_clr_z)
+            Cylinder(
+                radius=cfg.pillar_radius + skirt_clr,
+                height=cfg.riser_skirt_h + boss_clr_z + 0.1,
+                align=(Align.CENTER, Align.CENTER, Align.MIN),
+            )
+            # Lego boss socket: Z = 0 .. (riser_skirt_h + boss_clr_z + boss_h + boss_clr_z)
+            Cylinder(
+                radius=boss_r + boss_clr_r,
+                height=cfg.riser_skirt_h + boss_clr_z + boss_h + boss_clr_z + 0.1,
+                align=(Align.CENTER, Align.CENTER, Align.MIN),
+            )
+            # Pin hole: Z = 0 .. (riser_skirt_h + boss_clr_z + boss_h + boss_clr_z + cfg.rod_6mm_depth)
+            Cylinder(
+                radius=rod_hole_r,
+                height=cfg.riser_skirt_h + boss_clr_z + boss_h + boss_clr_z + cfg.rod_6mm_depth + 0.1,
+                align=(Align.CENTER, Align.CENTER, Align.MIN),
+            )
+    full_riser = full_riser - riser_fem_sockets.part
+
     # ------------------------------------------------------------------
     # Partition `full_riser` into 4 Watertight Color Zones
     # ------------------------------------------------------------------
-    total_riser_z = hz + cfg.riser_rod_len + 2.0
+    total_riser_z = hz + boss_h + cfg.riser_rod_len + 2.0
     with BuildPart() as corner_mask:
         with Locations([(x, y, -1.0) for (x, y) in corner_pts]):
             Cylinder(
