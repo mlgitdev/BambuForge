@@ -74,9 +74,7 @@ BambuForge/
 │       ├── bambu-studio-ai/           # Skill 2: Multi-plate .3mf packaging, 11-point analyzer & CAD handoff
 │       └── self-learning-cad/         # Skill 3: Continuous preference calibration & /learn workflow
 ├── examples/
-│   ├── 01-oval-stadium-planter/               # Modular Oval Planter (4 Trays, 6/1/4/2 Colors, flush zero-sanding joint)
-│   ├── 04-self-watering-sip-wicking-planter/  # Flagship 4-Tray, 6-Color self-watering planter showcase
-│   └── cherry-tomato-modular-planter/         # Modular Rectangular Planter (4 Trays, flush locking joints)
+│   └── 04-self-watering-sip-wicking-planter/  # Flagship 4-Tray, 6-Color self-watering planter showcase
 └── models/
     └── <your-model-name>/             # Every new model is generated in its own isolated subdirectory
 ```
