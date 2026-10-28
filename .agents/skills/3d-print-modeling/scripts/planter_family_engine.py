@@ -694,76 +694,90 @@ def build_subsoil_irrigation_arch_2_colors(cfg: PlanterSystemConfig) -> List[Tup
     Builds Tray 4: A pair of 3D-printed Sub-Soil Perforated Irrigation & Wicking Arch Straws
     (2 Color Zones) that plug directly into two Ø8.0mm floor drainage holes (X = -64mm and X = +64mm,
     128.0mm center-to-center span) and loop in a rounded ∩-arch up through the potting soil.
-    - Printed lying flat on Z = 0 with a 45-degree octagonal/diamond cross-section for 0% supports.
-    - Hollow Ø5.2mm internal bore accepts either direct water seepage or a 4-5mm capillary wick rope.
+    - True round circular cross-section: Ø7.20mm outer diameter with continuous hollow Ø5.0mm bore.
+    - Fits into the planter's Ø8.0mm round holes with generous 0.40mm per-side clearance (0.80mm diametral gap)
+      eliminating the previous 10.6mm oblong oval mismatch and ensuring effortless drop-in fit.
+    - Wide 14.0mm landing collar stop at Y = 16.0mm (floor depth) prevents the straw from dropping through the
+      hole and provides a wide, stable footing that holds the 110mm arch standing upright in wet soil.
+    - 1.5mm 45° self-centering lead-in tip chamfer at the bottom nozzle tips.
+    - Printed lying flat on Z = 0 with a 0.30mm planar bed contact strip for rock-solid PEI adhesion with 0% supports.
     - 18 root-seepage micro-slits (1.4mm wide) along the curved arch diffuse moisture into the root zone.
     """
     half_span = 64.0  # Matches drain_pts dx = (-64.0, +64.0) -> 128.0 mm span
     plug_len = 16.0   # Drops through the 5mm floor into the Drip Saucer water reservoir below
     straight_leg = 46.0
     arch_top_y = straight_leg + half_span  # 110.0 mm total height above plug base
-    tube_od = 10.6
-    plug_od = 7.4     # Fits inside Ø8.0mm floor hole with 0.6mm clearance
-    bore_id = 5.0     # Continuous hollow straw channel
+    straw_od = 7.20   # True round cylinder Ø7.20mm (fits into Ø8.0mm hole with 0.80mm total clearance)
+    bore_id = 5.00    # Continuous hollow wicking channel
+    bed_flat = 0.30   # 0.30mm planar contact strip for 100% bed adhesion on Z = 0
 
-    # 1. Main upper arch path (Y = plug_len .. arch_top_y)
-    with BuildLine(Plane.XY) as main_path:
-        Line((-half_span, plug_len), (-half_span, straight_leg))
-        ThreePointArc((-half_span, straight_leg), (0.0, arch_top_y), (half_span, straight_leg))
-        Line((half_span, straight_leg), (half_span, plug_len))
-    main_wire = main_path.wires()[0]
-
-    # 2. Full bore path (Y = 0 .. arch_top_y)
-    with BuildLine(Plane.XY) as full_path:
+    # 1. Main upper arch path (Y = 0 .. arch_top_y)
+    with BuildLine(Plane.XY) as path:
         Line((-half_span, 0.0), (-half_span, straight_leg))
         ThreePointArc((-half_span, straight_leg), (0.0, arch_top_y), (half_span, straight_leg))
         Line((half_span, straight_leg), (half_span, 0.0))
-    full_wire = full_path.wires()[0]
+    wire = path.wires()[0]
 
-    z_center = tube_od / 2.0
-    plane_main = Plane(origin=(-half_span, plug_len, z_center), x_dir=(1, 0, 0), z_dir=(0, 1, 0))
-    plane_full = Plane(origin=(-half_span, 0.0, z_center), x_dir=(1, 0, 0), z_dir=(0, 1, 0))
+    z_center = straw_od / 2.0
+    sweep_plane = Plane(origin=(-half_span, 0.0, z_center), x_dir=(1, 0, 0), z_dir=(0, 1, 0))
 
-    with BuildSketch(plane_main) as sk_main_out:
-        Rectangle(tube_od, tube_od)
-        chamfer(sk_main_out.vertices(), length=2.4)
+    # Outer round tube sketch with tiny planar bed flat:
+    with BuildSketch(sweep_plane) as sk_out:
+        Circle(radius=straw_od / 2.0)
+        with Locations((0, -z_center + bed_flat / 2.0)):
+            Rectangle(straw_od, bed_flat, mode=Mode.SUBTRACT)
 
-    with BuildSketch(plane_full) as sk_bore:
-        Rectangle(bore_id, bore_id)
-        chamfer(sk_bore.vertices(), length=1.2)
+    # Inner round bore sketch:
+    with BuildSketch(sweep_plane) as sk_in:
+        Circle(radius=bore_id / 2.0)
 
-    with BuildPart() as arch_body_p:
-        sweep(sk_main_out.sketch, path=main_wire)
-    with BuildPart() as bore_p:
-        sweep(sk_bore.sketch, path=full_wire)
+    with BuildPart() as p_body:
+        sweep(sk_out.sketch, path=wire)
+    with BuildPart() as p_bore:
+        sweep(sk_in.sketch, path=wire)
 
-    # 3. Bottom tapered floor-plug nozzles (Y = 0 .. plug_len) at X = -64 and X = +64
-    plugs = []
+    straw_base = p_body.part - p_bore.part
+
+    # 2. Add Landing Collars at Y = plug_len (16.0 mm)
+    # At X = -64 and X = +64: 14.0mm wide flange in XY plane that stops on the planter floor
+    flange_w = 14.0
+    flange_l = 3.0
+    flange_h = straw_od - bed_flat
+
+    with BuildPart() as p_flanges:
+        for x_end in (-half_span, half_span):
+            with Locations((x_end, plug_len + flange_l / 2.0, flange_h / 2.0)):
+                Box(flange_w, flange_l, flange_h)
+
+    flanges_with_bore = p_flanges.part - p_bore.part
+    straw_combined = straw_base + flanges_with_bore
+
+    # 3. Add 45-deg Lead-in Chamfer to Plug Tips (Y = 0):
     for x_end in (-half_span, half_span):
-        p_plane = Plane(origin=(x_end, 0.0, z_center), x_dir=(1, 0, 0), z_dir=(0, 1, 0))
-        with BuildSketch(p_plane) as sk_plug:
-            # Height in Z stays tube_od so it touches Z=0 on the bed; width in X narrows to plug_od (7.4mm)
-            Rectangle(plug_od, tube_od)
-            chamfer(sk_plug.vertices(), length=1.8)
-        with BuildPart() as plug_part:
-            extrude(sk_plug.sketch, amount=plug_len + 1.0)
-        plugs.append(plug_part.part)
+        with BuildPart() as tip_chamfer_cutter:
+            with Locations((x_end, 0.0, z_center)):
+                Cone(bottom_radius=straw_od + 2.0, top_radius=straw_od/2.0 - 0.6, height=1.5, rotation=(90, 0, 0))
+                Cylinder(radius=straw_od/2.0 - 0.6, height=3.0, rotation=(90, 0, 0), mode=Mode.SUBTRACT)
+        straw_combined = straw_combined - tip_chamfer_cutter.part
 
-    single_straw = arch_body_p.part + plugs[0] + plugs[1] - bore_p.part
-
-    # 4. Cut root-seepage micro-slits along the curved arch & intake slots at the bottom plug tips
+    # 4. Cut Root-Seepage Micro-Slits along curved arch:
     for deg in range(18, 163, 12):
         rad = math.radians(deg)
         cx = -half_span * math.cos(rad)
         cy = straight_leg + half_span * math.sin(rad)
-        slit = Pos(cx, cy, tube_od - 1.8) * Rot(0, 0, deg - 90) * Box(tube_od + 2.0, 1.4, 4.0)
-        single_straw = single_straw - slit
+        slit = Pos(cx, cy, straw_od - 1.0) * Rot(0, 0, deg - 90) * Box(straw_od + 2.0, 1.4, 3.0)
+        straw_combined = straw_combined - slit
 
+    # 5. Cut Intake Slots at bottom tips (Y in [2.0, 6.0]):
     for x_end in (-half_span, half_span):
-        tip_slot = Pos(x_end, 4.0, tube_od - 1.8) * Box(plug_od + 2.0, 2.0, 4.2)
-        single_straw = single_straw - tip_slot
+        tip_slot = Pos(x_end, 4.0, straw_od - 1.0) * Box(straw_od + 2.0, 2.0, 3.0)
+        straw_combined = straw_combined - tip_slot
 
-    # 5. Create a pair of 2 arches nested cleanly on the 256x256 build plate (centered around Y=0)
+    # Translate so min Z is exactly 0.00:
+    bb = straw_combined.bounding_box()
+    single_straw = straw_combined.translate((0, 0, -bb.min.Z))
+
+    # 6. Create pair of 2 nested arches:
     arch_1 = Pos(0.0, 5.0, 0.0) * single_straw
     arch_2 = Pos(0.0, -5.0, 0.0) * Rot(0, 0, 180) * single_straw
     both_arches = arch_1 + arch_2
@@ -785,6 +799,7 @@ def build_subsoil_irrigation_arch_2_colors(cfg: PlanterSystemConfig) -> List[Tup
         ("Color1_SubSoil_Straw_Arch_Tube", 4, zone1_main),
         ("Color2_Intake_Plugs_And_Root_Diffuser_Crown", 5, zone2_accents),
     ]
+
 
 
 def generate_complete_planter_project(

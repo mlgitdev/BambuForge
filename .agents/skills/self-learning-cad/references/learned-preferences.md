@@ -43,3 +43,10 @@
   - Outer dimensions must remain $\le 250\text{ mm}$ (e.g. $248 \times 198\text{ mm}$) to stay safely within the Bambu Lab P2S $256 \times 256\text{ mm}$ build envelope.
   - Internal raised aeration rails ($3.6\text{ mm}$ height) must elevate the planter above standing runoff water for root health.
 
+* **Planter Sub-Soil Irrigation Straw Geometry & Round Floor Hole Invariant:**
+  - **Nominal Floor Hole Profile:** Planter drainage and sub-irrigation floor holes are round cylinders (nominal $\varnothing 8.00\text{ mm}$).
+  - **True Round Circular Plug Cross-Section ($\varnothing 7.20\text{ mm}$):** Irrigation arch straws and bottom insertion plugs must be true round cylinders with a continuous circular cross-section ($\varnothing 7.20\text{ mm}$ outer diameter with continuous hollow $\varnothing 5.00\text{ mm}$ capillary wicking bore).
+  - **Zero Oblong/Oval Distortion:** **NEVER** stretch, taper, or sweep a straw plug with unequal X/Z dimensions (e.g. $7.4 \times 10.6\text{ mm}$) to meet the bed, as this turns the plug into an oblong oval that physically jams and cannot enter the $\varnothing 8.00\text{ mm}$ round hole.
+  - **Support-Free Planar Bed Contact Strip:** To ensure 100% support-free bed adhesion when printed lying flat on $Z = 0$, keep the straw circular and add a small planar bed flat facet ($0.30\text{ mm}$) along the underside, providing a continuous $2.8\text{ mm}$ wide bed contact strip without altering the circular insertion profile.
+  - **Wide Landing Collar Stop ($14.0\text{ mm}$):** Provide a wide ($14.0\text{ mm}$) horizontal landing collar stop at the floor insertion line ($Y = 16.0\text{ mm}$) so the straw rests firmly on the planter floor with zero wobble, and add a $1.5\text{ mm}$ $45^\circ$ self-centering lead-in tip chamfer for smooth slide-in fit.
+  - **Provide Standalone Single-Straw STL:** Alongside the 2-straw multi-plate tray (`tray4_irrigation_straws_2color.stl`), always export a standalone single-straw STL (`tray4_irrigation_straw_single.stl`) for convenient single replacement printing.
