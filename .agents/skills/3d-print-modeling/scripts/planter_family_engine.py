@@ -85,12 +85,12 @@ class PlanterSystemConfig:
     rod_4mm_bore_d: float = 4.45      # Lower socket for 4mm metal wire stakes
     rod_4mm_depth: float = 50.0       # 110mm total socket depth
 
-    # Tray 2: Drip Saucer (<= 244 x 194 mm total outer footprint for P2S plate auto-arrange)
-    saucer_clearance: float = 0.7
-    saucer_wall_t: float = 3.4
-    saucer_floor_t: float = 4.0
-    saucer_height_z: float = 32.0
-    saucer_rib_h: float = 3.6
+    # Tray 2: Drip Saucer (<= 248 x 198 mm total outer footprint for P2S plate auto-arrange)
+    saucer_clearance: float = 4.8      # Generous 4.8 mm per-side clearance (9.6 mm total) for smooth non-binding drop-in fit
+    saucer_wall_t: float = 3.2         # Watertight 8-loop perimeter wall
+    saucer_floor_t: float = 4.0        # Heavy-duty floor
+    saucer_height_z: float = 32.0      # Generous 24.4 mm overlap & large runoff reservoir
+    saucer_rib_h: float = 3.6          # Aeration rail elevation
 
     # Tray 3: Inverted Stackable Extension Riser + 4 Integrated Male Locking Rods
     riser_body_h: float = 140.0       # Main riser body height (Z = 0..140mm)
@@ -128,7 +128,9 @@ def _sketch_2d_profile(style: str, length_x: float, width_y: float, corner_r: fl
     """Adds the 2D outer cross-section for the chosen style inside an active BuildSketch."""
     if style == "oval_stadium":
         # Smooth stadium / super-ellipse rounded rectangle with generous end radii
-        r_oval = min(width_y / 2.0 - 1.0, corner_r + 48.0)
+        # If corner_r is passed as an explicit saucer radius (> 30.0), respect it directly;
+        # otherwise compute body radius based on base corner_r (18.0 + 48.0 = 66.0 mm).
+        r_oval = corner_r if corner_r > 30.0 else min(width_y / 2.0 - 1.0, corner_r + 48.0)
         RectangleRounded(length_x, width_y, radius=r_oval)
 
     elif style == "roman_fluted":
@@ -470,7 +472,10 @@ def build_drip_saucer_1_color(cfg: PlanterSystemConfig) -> List[Tuple[str, int, 
     base_style = "rectangular_classic" if cfg.style in ("roman_fluted", "self_watering_sip", "zen_pagoda") else cfg.style
     inner_x = cfg.outer_length_x + 2.0 * cfg.saucer_clearance
     inner_y = cfg.outer_width_y + 2.0 * cfg.saucer_clearance
-    inner_r = cfg.corner_radius + cfg.saucer_clearance
+    if cfg.style == "oval_stadium":
+        inner_r = 50.0  # Calibrated corner radius clearing corner columns with uniform 4.8mm gap
+    else:
+        inner_r = cfg.corner_radius + cfg.saucer_clearance
 
     outer_x = inner_x + 2.0 * cfg.saucer_wall_t
     outer_y = inner_y + 2.0 * cfg.saucer_wall_t

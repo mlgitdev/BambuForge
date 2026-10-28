@@ -178,6 +178,13 @@ Whenever the user requests a fine-tuning adjustment, reports a print fit issue, 
   * **Bambu Studio (`C:\Program Files\Bambu Studio\bambu-studio.exe`):** Target slicer and multi-plate `.3mf` packager.
 * **Slicer & Multi-Plate `.3mf` Workflow:** Always pack multi-module sets onto **separate build plates (trays)** inside a single `.3mf` project pre-configured for the **Bambu Lab P2S (`0.4 mm` nozzle, Supports = OFF)** using Bambu Studio's **2-column plate grid** (`Plate 1 = (128, 128)`, `Plate 2 = (435.2, 128)`, `Plate 3 = (128, -179.2)`), 6 flattened filament JSON profiles (`--load-filaments`), and a final `bambu-studio.exe --export-3mf` verification round-trip.
 * **Multi-Agent Task Isolation & Worktree Rule:** Whenever another agent is running or when developing a new model/feature, always work inside an isolated worktree under `.worktrees/` created via `.\scripts\worktree.ps1 new <branch>`. Inherit the root `.venv` without duplicating dependencies, and treat the sibling `../BambuForge` folder as remote `bambuforge` and GitHub as `origin`.
+* **Planter Drip Saucer Clearance & Full Corner Column Coverage Rule:**
+  - Water collection saucers and drip plates must fully cover both the planter's nominal body profile AND any reinforced corner columns or architectural pilasters.
+  - Clearance must be generous: **$\ge 4.5 - 5.0\text{ mm}$ per side** ($9.0 - 10.0\text{ mm}$ total gap), never razor-thin or "millimeter-to-millimeter" ($\le 1.0\text{ mm}$), ensuring effortless drop-in and lift-out without binding, jamming, or surface-tension sticking.
+  - For oval / stadium planters, calibrate the saucer corner radius ($R \approx 50.0\text{ mm}$) so the corner does not aggressively cut into the diagonal corner columns, maintaining a uniform $4.8\text{ mm}$ clearance all around.
+  - Outer dimensions must remain $\le 250\text{ mm}$ (e.g. $248 \times 198\text{ mm}$) to stay safely within the Bambu Lab P2S $256 \times 256\text{ mm}$ build envelope.
+  - Internal raised aeration rails ($3.6\text{ mm}$ height) must elevate the planter above standing runoff water for root health.
+
 * **Operational Guardrail:** Never run slow, unmonitored `urllib` downloads for large multi-hundred-MB installers; always check installed binaries first or use fast CLI tools with explicit timeouts.
 * **Multi-Color AMS Segmentation Rule:** Partition planter models into distinct, non-overlapping B-Rep color sub-parts inside the `.3mf` and `.step` assemblies:
   * **Base Planter (`6` Colors):** 3 structural wall layers + horizontal connecting strips/belts + top rim collar + 4 corner edge columns.
