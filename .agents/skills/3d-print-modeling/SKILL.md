@@ -88,6 +88,14 @@ When the user provides raster graphics (PNG, JPG, BMP) in `imports/` or requests
 
 ---
 
+
+### Face-Down Bed Printing & Logo Chirality Rule (The Roll-Over Invariant)
+When printing lids, faceplates, or covers face-down on the textured PEI plate (`Z = 0`) with flush multi-color inlays or debossed text:
+- **Rigid-Body Transformation Match:** If the lid is modeled upright and flipped 180° to face the bed, the logo/artwork MUST undergo the exact same 180° rotation around the exact same axis and center. Never negate a single coordinate axis ($X \to -X$) which creates an improper mirror reflection ($\\det(R) = -1$).
+- **The Slicer Through-the-Cavity Rule:** Looking down from $+Z$ in Bambu Studio reveals the inside cavity of a face-down lid; looking through the back naturally looks reversed. Never mirror the logo to look readable through the back!
+- **Bottom-View Verification Invariant:** Verify exterior text by looking from **$-Z$ looking UP at the build plate**—text must read left-to-right and emblems must face forward on the bed contact layer.
+- **Standalone Artwork Badges:** Standalone decorative emblems/badges must be exported upright on their flat back at $Z = 0$ facing $+Z$ so the user can import, scale, and position them freely in Bambu Studio.
+
 ## 4. Modifying Imported Third-Party `.3mf` / `.stl` Models (`imports/` Workflow)
 
 When the user provides downloaded MakerWorld / Printables files in `imports/<folder>/`:

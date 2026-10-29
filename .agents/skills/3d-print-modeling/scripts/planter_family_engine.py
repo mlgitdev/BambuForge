@@ -802,6 +802,72 @@ def build_subsoil_irrigation_arch_2_colors(cfg: PlanterSystemConfig) -> List[Tup
 
 
 
+
+
+def build_retrofit_snap_adapter(
+    cfg: PlanterSystemConfig,
+    h_adapter: float = 18.0
+) -> Tuple[Part, Part]:
+    """
+    Builds the Retrofit Snap Adapter Coupler and 4 Concentric Locator Alignment Dowels.
+    - Sits flat on Z = 0 for 100% support-free FDM printing.
+    - Bottom face glues flush onto previously printed Base Planters with flat top rims.
+    - Top face features the standard 3-tier Lego interlocking receiving joint:
+      1. Female skirt pocket (7.5 mm depth, 0.35 mm clearance).
+      2. Circular Lego boss sockets (Ø15.7 mm x 3.5 mm depth with 0.8 mm lead-in chamfer).
+      3. Straight through-bores (Ø6.7 mm) down through the adapter into the base's corner holes.
+    - 4 Locator Dowels (Ø6.0 mm x 16.0 mm with 1.0 mm lead-in chamfers) drop into base holes
+      to guarantee 100% concentric alignment during gluing.
+    """
+    lx, wy = cfg.outer_length_x, cfg.outer_width_y
+    wt, cr = cfg.wall_thickness, cfg.corner_radius
+    corner_pts = get_style_corner_points(cfg)
+
+    with BuildPart() as shell:
+        with BuildSketch(Plane.XY):
+            _sketch_2d_profile(cfg.style, lx + 2.0 * cfg.rim_ext, wy + 2.0 * cfg.rim_ext, cr + cfg.rim_ext)
+        extrude(amount=h_adapter)
+
+    in_x = lx - 2.0 * wt
+    in_y = wy - 2.0 * wt
+    in_r = max(4.0, cr - wt)
+    with BuildPart() as hollow:
+        with BuildSketch(Plane.XY.offset(-1.0)):
+            _sketch_2d_profile(cfg.style, in_x, in_y, in_r)
+        extrude(amount=h_adapter + 2.0)
+
+    adapter = shell.part - hollow.part
+
+    with BuildPart() as pillars:
+        with Locations([(x, y, 0) for (x, y) in corner_pts]):
+            Cylinder(radius=cfg.pillar_radius + cfg.rim_ext, height=h_adapter, align=(Align.CENTER, Align.CENTER, Align.MIN))
+
+    adapter = adapter + pillars.part
+    adapter = adapter - hollow.part
+
+    cutter = make_stacking_female_cutter(cfg, z_top=h_adapter)
+    for x, y in corner_pts:
+        adapter = adapter - cutter.moved(Location((x, y, 0)))
+
+    with BuildPart() as through_bores:
+        with Locations([(x, y, -0.5) for (x, y) in corner_pts]):
+            Cylinder(radius=cfg.rod_6mm_bore_d / 2.0, height=h_adapter + 1.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    adapter = adapter - through_bores.part
+
+    with BuildPart() as pins:
+        pin_r = 3.00
+        pin_len = 16.0
+        for (px, py) in [(-8.0, -8.0), (8.0, -8.0), (-8.0, 8.0), (8.0, 8.0)]:
+            with Locations((px, py, 0)):
+                Cylinder(radius=pin_r, height=pin_len, align=(Align.CENTER, Align.CENTER, Align.MIN))
+                with Locations((0, 0, pin_len - 1.0)):
+                    Cone(bottom_radius=pin_r, top_radius=pin_r - 1.0, height=1.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
+                with Locations((0, 0, 0)):
+                    Cone(bottom_radius=pin_r - 1.0, top_radius=pin_r, height=1.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
+
+    return adapter, pins.part
+
+
 def generate_complete_planter_project(
     cfg: PlanterSystemConfig,
     model_script_path: Path,

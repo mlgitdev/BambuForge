@@ -92,6 +92,13 @@ Whenever packing multiple trays/modules and multi-color AMS sub-parts into a sin
 
 ---
 
+
+- **Face-Down Inlay & Logo Chirality Verification (Check 12):**
+  When an enclosure lid or cover is placed face-down on the build plate (`Z = 0.00 mm`) for flush multi-color inlay printing:
+  1. Inspect the model using a bottom camera view (`-Z` looking UP at the build plate).
+  2. Confirm that exterior text reads normally from left to right and that directional graphics face their intended orientation on the bed contact plane.
+  3. Recognize that looking down from `+Z` in Bambu Studio shows the inside cavity of the part, which naturally looks reversed through the back; never apply an axis inversion ($X \to -X$) to make it readable from `+Z`, which would cause it to print reversed on the PEI bed!
+
 ## 4. Visual CAD & 2D-to-3D Handoff (FreeCAD 1.1 & CADCraft)
 
 * **FreeCAD 1.1 (`<USER_HOME>\AppData\Local\Programs\FreeCAD 1.1\bin\freecad.exe`):** Launch via `bambu_handoff.py --app freecad --open <file.step>` to inspect/edit multi-body B-Rep `.step` assemblies.

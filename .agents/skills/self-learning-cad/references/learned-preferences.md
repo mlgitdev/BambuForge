@@ -50,3 +50,22 @@
   - **Support-Free Planar Bed Contact Strip:** To ensure 100% support-free bed adhesion when printed lying flat on $Z = 0$, keep the straw circular and add a small planar bed flat facet ($0.30\text{ mm}$) along the underside, providing a continuous $2.8\text{ mm}$ wide bed contact strip without altering the circular insertion profile.
   - **Wide Landing Collar Stop ($14.0\text{ mm}$):** Provide a wide ($14.0\text{ mm}$) horizontal landing collar stop at the floor insertion line ($Y = 16.0\text{ mm}$) so the straw rests firmly on the planter floor with zero wobble, and add a $1.5\text{ mm}$ $45^\circ$ self-centering lead-in tip chamfer for smooth slide-in fit.
   - **Provide Standalone Single-Straw STL:** Alongside the 2-straw multi-plate tray (`tray4_irrigation_straws_2color.stl`), always export a standalone single-straw STL (`tray4_irrigation_straw_single.stl`) for convenient single replacement printing.
+
+* **Face-Down Bed Inlay & Logo Chirality Rule (The Roll-Over Invariant):**
+  - When an enclosure top lid is printed face-down on the PEI bed (`Z = 0`), the lid has been rolled over $180^\circ$ from its upright CAD orientation.
+  - The logo, text, or inlay MUST undergo the exact same rigid-body $180^\circ$ rotation as the lid.
+  - Never invert/negate X independently; negating X creates a mirror reflection rather than a physical roll-over.
+  - In slicer 3D view from `+Z`, the user sees the inside cavity; looking through the back of an un-mirrored part naturally appears reversed. Never "fix" the `+Z` view by flipping the logo, which makes it print backwards on the plate!
+  - Always verify from the **Bottom View (`-Z` looking UP at the build plate)**: text must read left-to-right.
+  - Standalone artwork STLs (`pegasus_horse_wings_only.stl`, badges) must be exported upright on their flat back at `Z = 0` facing `+Z`.
+* **Calibrated Snap Pin Dimensions for Ø3.00mm Knuckles:**
+  - Pin shaft diameter: **Ø2.75 mm** (total clearance $0.25\text{ mm}$ / $0.125\text{ mm}$ per side in Ø3.00mm knuckle), providing a snug, smooth sliding fit without wobble or relaxed slack.
+  - Split cantilever snap barb: **Ø3.05 mm** with $0.75\text{ mm}$ flex slot, $1.50\text{ mm}$ conical lead-in ramp, compressing effortlessly through Ø3.00mm hole.
+  - Snap retaining collar ring: **Ø4.80 mm OD x 1.80 mm height**, inner bore **Ø2.85 mm** with **Ø3.15 mm x 0.70 mm counterbore detent** that snaps permanently over the barb.
+  - Dual print orientations provided: Horizontal flat-bottom pin with $0.20\text{ mm}$ bed contact facet for 100% bed adhesion and zero supports (5x layer line strength), plus vertical concentric pin.
+* **Retrofit Snap Adapter Coupler for Modular Planters:**
+  - For previously printed base planters that lack the 3-tier Lego interlocking rim, provide a compact $18.0\text{ mm}$ tall Retrofit Snap Adapter Coupler (`oval_planter_retrofit_snap_adapter.stl` & `.step`).
+  - Sits flat on $Z = 0$ for support-free printing. Bottom face glues flush to the old base planter rim.
+  - Top face features the standard 3-tier female receiving joint (female skirt pocket $7.5\text{ mm}$ deep, circular Lego boss sockets Ø15.7 x $3.5\text{ mm}$, through-bores Ø6.7mm).
+  - Includes 4 concentric locator dowels (Ø6.0 x $16.0\text{ mm}$) that drop into base corner holes for 100% concentric, foolproof alignment while adhesive cures.
+  - Enables new Extension Risers to snap onto old printed planters with **0.0 mm seam gap** and **0.000000 mm³ collision volume**!

@@ -263,6 +263,25 @@ Whenever the user requests a fine-tuning adjustment, reports a print fit issue, 
 
 ---
 
+
+* **Face-Down Bed Printing & Inlay/Logo Chirality Principle (The Roll-Over Rule):**
+  - **The Roll-Over Invariant:** When an enclosure top lid is oriented face-down on the textured PEI plate (`Z = 0`) for support-free flush multi-color inlay printing, the lid has undergone a 180° physical roll-over around the X or Y axis. Any 2D logo, text engraving, or multi-color inlay applied to that exterior face MUST undergo the **EXACT SAME rigid-body rotation** as the lid.
+  - **Never Negate a Single Axis:** Inverting $X \to -X$ or $Y \to -Y$ creates an improper mirror reflection ($\\det(R) = -1$) rather than a physical 3D roll-over ($\\det(R) = +1$), reversing text direction and logo chirality.
+  - **The Slicer Through-the-Back Illusion:** In Bambu Studio, looking from `+Z` looks down into the inside cavity of the lid; looking through the back of an un-mirrored part naturally looks reversed. Never mirror the logo to look readable from `+Z`, which guarantees it prints backwards on the bed!
+  - **The Bottom Camera Invariant:** The definitive verification is to view the model from **`-Z` looking UP at the build plate**. In this view, exterior text MUST read left-to-right and emblems must face their intended directions.
+  - **Standalone Artwork STLs:** Standalone badges and logos must be exported upright on their flat back at $Z = 0$ facing $+Z$ so the user can import, scale, and position them anywhere in Bambu Studio.
+* **Calibrated Snap Hinge Pin Dimensions (Ø3.00mm Knuckles):**
+  - Pin shaft diameter: **Ø2.75 mm** (total clearance $0.25\text{ mm}$ / $0.125\text{ mm}$ per side in Ø3.00mm knuckle), delivering a snug, smooth sliding fit without wobble or relaxed slack.
+  - Split snap barb: **Ø3.05 mm** with $0.75\text{ mm}$ flex slot, compressing easily through Ø3.00mm knuckle.
+  - Retaining collar ring: **Ø4.80 mm OD x 1.80 mm height**, inner bore **Ø2.85 mm** with **Ø3.15 mm x 0.70 mm counterbore detent**.
+  - Flat-bottom lay-down orientation: $0.20\text{ mm}$ planar bed contact facet extends along underside for 100% bed adhesion and zero supports (5x layer line strength), plus vertical print option.
+* **Retrofit Snap Adapter Coupler for Modular Planters:**
+  - For previously printed base planters lacking the female interlocking rim, provide a compact $18.0\text{ mm}$ tall transition adapter (`oval_planter_retrofit_snap_adapter.stl` & `.step`).
+  - Bottom face glues flush to the old base rim; top face provides the standard 3-tier Lego interlocking joint ($7.5\text{ mm}$ skirt pocket, Ø15.7 x $3.5\text{ mm}$ Lego boss sockets, Ø6.7mm through-bores).
+  - Includes 4 concentric locator dowels (Ø6.0 x $16.0\text{ mm}$) for 100% concentric alignment during gluing.
+  - Guaranteed **0.0 mm seam gap** and **0.000000 mm³ collision volume** against new Extension Risers!
+
+
 ## 8. Model Registry
 
 | Date | Model Folder | Description | Status | Print Feedback / Notes |

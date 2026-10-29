@@ -94,3 +94,32 @@ Raster images (PNG logos, silhouettes, scans) can be imported into CAD scripts u
   solid_inlay = b3d.extrude(faces[0], amount=0.8)
   ```
 - **Mask Control:** Use `--channel alpha` for transparent PNGs, `--channel luminance` for dark/light figure extraction, and `--colormode color` for multi-color stacked vectorization.
+
+---
+
+## 8. Face-Down Printing & Inlay/Logo Chirality Principle (The Roll-Over Rule)
+
+When designing enclosures, lids, covers, or multi-color flush inlays that print **face-down on the build plate (`Z = 0`)** (such as on a textured PEI sheet for zero supports and a premium surface finish):
+
+### The Fundamental Physics & Spatial Mechanics:
+1. **The Rigid-Body Roll-Over Invariant (Part & Logo Share 100% of Transforms):**
+   - In CAD, an object is modeled right-side up in its functional assembled orientation (exterior face normal $\vec{n} = +Z$).
+   - When preparing the part for 3D printing face-down at $Z = 0$, the part is **rolled over** (rotated $180^\circ$ around the X or Y axis).
+   - Any 2D artwork (logo, text, emblem) applied to that exterior face MUST undergo the **EXACT SAME rigid-body rotation** as the part ($\\det(R) = +1$).
+   - **NEVER negate a single axis ($X \to -X$ or $Y \to -Y$) independently.** Negating one axis creates an improper reflection (mirroring, $\\det(R) = -1$) rather than a physical 3D rotation, corrupting text direction and emblem chirality.
+
+2. **The "Slicer Looking-Through-The-Back" Optical Illusion:**
+   - In Bambu Studio or any slicer, the default 3D camera looks from $+Z$ downwards toward the bed plate.
+   - When a lid is lying face-down on the bed at $Z = 0$, looking down from $+Z$ means looking at the **INSIDE CAVITY** (the back of the lid) towards the bed.
+   - Looking through the rear of a face-down part at the bed-facing artwork naturally appears reversed/mirrored from $+Z$—exactly like looking at text on a storefront glass window from inside the shop!
+   - An AI agent must **NEVER** "fix" this view by mirroring the text to look readable from $+Z$, because doing so guarantees that the 3D printer will lay down reversed text on the PEI plate, producing a backwards print.
+
+3. **The Bottom-Camera Verification Invariant (Bed Contact View):**
+   - The definitive mathematical proof that a face-down print is oriented correctly is to inspect the model with a virtual camera positioned at **$-Z$ looking UP (+Z) directly at the build plate** (or viewing the isolated 2D contact layer at $Z = 0$ from the outside).
+   - In this Bottom View (looking at the face that touches the PEI plate):
+     - Text MUST read normally from Left to Right.
+     - Directional emblems (e.g. crest, shield, stallion) MUST face their intended directions.
+     - Features must align with their mating geometry (e.g. hinge at $+Y$, latch at $-Y$).
+
+4. **Standalone Artwork STLs Must Be Upright & Non-Mirrored:**
+   - Standalone decorative STLs (e.g. `pegasus_horse_wings_only.stl`, standalone badges) meant for user placement in Bambu Studio must always be exported upright, sitting flat on their back at $Z = 0$ with the front detail facing $+Z$, reading normally from above (+Z).
