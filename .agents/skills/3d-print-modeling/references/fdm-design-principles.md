@@ -123,3 +123,5 @@ When designing enclosures, lids, covers, or multi-color flush inlays that print 
 
 4. **Standalone Artwork STLs Must Be Upright & Non-Mirrored:**
    - Standalone decorative STLs (e.g. `pegasus_horse_wings_only.stl`, standalone badges) meant for user placement in Bambu Studio must always be exported upright, sitting flat on their back at $Z = 0$ with the front detail facing $+Z$, reading normally from above (+Z).
+
+  - **Flush Inlay & Engraving Depth Standard (`1.60 – 2.00 mm` / `8–10 Layers`):** Never make multi-color flush inlays, debossed recesses, or standalone decorative badges shallow (`0.60 mm` / 3 layers), as light filaments (Yellow, Gold, Orange, White) over dark shells (Black, Charcoal) suffer from optical color bleed-through and fragile geometry. Always design inlays, recesses, and standalone badges at **`1.60 – 2.00 mm` depth (`8–10 layers` at `0.20 mm`)** (e.g. `1.80 mm` on a `3.00 mm` lid leaving `1.20 mm` backing; `1.60 mm` on a `2.40 mm` floor leaving `0.80 mm` / 4 solid waterproof layers).

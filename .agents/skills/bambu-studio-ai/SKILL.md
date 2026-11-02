@@ -106,3 +106,5 @@ Whenever packing multiple trays/modules and multi-color AMS sub-parts into a sin
   * **Headless `.scr` / `.dxf` Runner:** `cadcraft-cli.exe run -i input.dxf -o output.svg --script-file commands.scr`
   * **Live MCP Server:** `cadcraft-cli.exe mcp --launch` starts CADCraft and bridges JSON-RPC 2.0 MCP tool calls to the live GUI (`127.0.0.1:44915`).
   * **2D-to-3D Bridge:** Import `.dxf` / `.svg` profiles drafted in CADCraft into `build123d` (`import_svg` / `ezdxf`) and extrude/loft them into support-free 3D B-Rep solids.
+
+  - **Flush Inlay & Engraving Depth Standard (`1.60 – 2.00 mm` / `8–10 Layers`):** Never make multi-color flush inlays, debossed recesses, or standalone decorative badges shallow (`0.60 mm` / 3 layers), as light filaments (Yellow, Gold, Orange, White) over dark shells (Black, Charcoal) suffer from optical color bleed-through and fragile geometry. Always design inlays, recesses, and standalone badges at **`1.60 – 2.00 mm` depth (`8–10 layers` at `0.20 mm`)** (e.g. `1.80 mm` on a `3.00 mm` lid leaving `1.20 mm` backing; `1.60 mm` on a `2.40 mm` floor leaving `0.80 mm` / 4 solid waterproof layers).

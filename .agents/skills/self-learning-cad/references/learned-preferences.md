@@ -69,3 +69,5 @@
   - Top face features the standard 3-tier female receiving joint (female skirt pocket $7.5\text{ mm}$ deep, circular Lego boss sockets Ø15.7 x $3.5\text{ mm}$, through-bores Ø6.7mm).
   - Includes 4 concentric locator dowels (Ø6.0 x $16.0\text{ mm}$) that drop into base corner holes for 100% concentric, foolproof alignment while adhesive cures.
   - Enables new Extension Risers to snap onto old printed planters with **0.0 mm seam gap** and **0.000000 mm³ collision volume**!
+
+  - **Flush Inlay & Engraving Depth Standard (`1.60 – 2.00 mm` / `8–10 Layers`):** Never make multi-color flush inlays, debossed recesses, or standalone decorative badges shallow (`0.60 mm` / 3 layers), as light filaments (Yellow, Gold, Orange, White) over dark shells (Black, Charcoal) suffer from optical color bleed-through and fragile geometry. Always design inlays, recesses, and standalone badges at **`1.60 – 2.00 mm` depth (`8–10 layers` at `0.20 mm`)** (e.g. `1.80 mm` on a `3.00 mm` lid leaving `1.20 mm` backing; `1.60 mm` on a `2.40 mm` floor leaving `0.80 mm` / 4 solid waterproof layers).
