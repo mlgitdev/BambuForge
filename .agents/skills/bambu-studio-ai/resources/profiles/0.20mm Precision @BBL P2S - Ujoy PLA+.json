@@ -1,0 +1,78 @@
+{
+    "from": "User",
+    "inherits": "0.20mm Standard @BBL P2S",
+    "name": "0.20mm Precision @BBL P2S - Ujoy PLA+",
+    "print_settings_id": "0.20mm Precision @BBL P2S - Ujoy PLA+",
+    "version": "2.6.0.5",
+    "print_extruder_id": [
+        "1",
+        "1",
+        "1"
+    ],
+    "print_extruder_variant": [
+        "Direct Drive Standard",
+        "Direct Drive High Flow",
+        "Direct Drive E3D High Flow"
+    ],
+    "layer_height": "0.20",
+    "initial_layer_print_height": "0.20",
+    "wall_loops": "3",
+    "top_shell_layers": "5",
+    "bottom_shell_layers": "4",
+    "top_shell_thickness": "1.0",
+    "bottom_shell_thickness": "0.8",
+    "outer_wall_speed": [
+        "80",
+        "nil",
+        "nil"
+    ],
+    "inner_wall_speed": [
+        "160",
+        "nil",
+        "nil"
+    ],
+    "sparse_infill_speed": [
+        "220",
+        "nil",
+        "nil"
+    ],
+    "internal_solid_infill_speed": [
+        "160",
+        "nil",
+        "nil"
+    ],
+    "top_surface_speed": [
+        "80",
+        "nil",
+        "nil"
+    ],
+    "initial_layer_speed": [
+        "30",
+        "nil",
+        "nil"
+    ],
+    "initial_layer_infill_speed": [
+        "60",
+        "nil",
+        "nil"
+    ],
+    "travel_speed": [
+        "400",
+        "nil",
+        "nil"
+    ],
+    "outer_wall_acceleration": [
+        "3000",
+        "nil",
+        "nil"
+    ],
+    "top_surface_acceleration": [
+        "2000",
+        "nil",
+        "nil"
+    ],
+    "precise_outer_wall": "1",
+    "infill_wall_overlap": "12%",
+    "seam_position": "aligned",
+    "seam_gap": "10%"
+}

@@ -1,0 +1,54 @@
+{
+    "from": "User",
+    "inherits": "0.24mm Standard @BBL P2S",
+    "name": "0.24mm Standard @BBL P2S - Ujoy PLA+",
+    "print_settings_id": "0.24mm Standard @BBL P2S - Ujoy PLA+",
+    "version": "2.6.0.5",
+    "print_extruder_id": [
+        "1",
+        "1",
+        "1"
+    ],
+    "print_extruder_variant": [
+        "Direct Drive Standard",
+        "Direct Drive High Flow",
+        "Direct Drive E3D High Flow"
+    ],
+    "layer_height": "0.24",
+    "initial_layer_print_height": "0.24",
+    "initial_layer_speed": [
+        "35",
+        "nil",
+        "nil"
+    ],
+    "initial_layer_infill_speed": [
+        "75",
+        "nil",
+        "nil"
+    ],
+    "outer_wall_speed": [
+        "150",
+        "nil",
+        "nil"
+    ],
+    "inner_wall_speed": [
+        "250",
+        "nil",
+        "nil"
+    ],
+    "sparse_infill_speed": [
+        "270",
+        "nil",
+        "nil"
+    ],
+    "internal_solid_infill_speed": [
+        "200",
+        "nil",
+        "nil"
+    ],
+    "travel_speed": [
+        "400",
+        "nil",
+        "nil"
+    ]
+}

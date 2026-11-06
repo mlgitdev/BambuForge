@@ -31,11 +31,14 @@ Activate this workflow automatically whenever:
 +---------------------------------------+
 |  Internal Workspace: 3D-Automation   |
 |  - AGENTS.md                          |
+|  - FILAMENTS.md                       |
+|  - profiles/                          |
 |  - .agents/skills/                    |
 |    - 3d-print-modeling/               |
 |    - bambu-studio-ai/                 |
 |    - self-learning-cad/               |
 |    - bambuforge-repo-sync/            |
+|    - worktree/                        |
 +---------------------------------------+
                    |
                    | python sync_to_bambuforge.py

@@ -804,68 +804,199 @@ def build_subsoil_irrigation_arch_2_colors(cfg: PlanterSystemConfig) -> List[Tup
 
 
 
-def build_retrofit_snap_adapter(
-    cfg: PlanterSystemConfig,
-    h_adapter: float = 18.0
-) -> Tuple[Part, Part]:
+def build_retrofit_snap_adapter(cfg: PlanterSystemConfig) -> Tuple[Part, Part]:
     """
-    Builds the Retrofit Snap Adapter Coupler and 4 Concentric Locator Alignment Dowels.
-    - Sits flat on Z = 0 for 100% support-free FDM printing.
-    - Bottom face glues flush onto previously printed Base Planters with flat top rims.
-    - Top face features the standard 3-tier Lego interlocking receiving joint:
-      1. Female skirt pocket (7.5 mm depth, 0.35 mm clearance).
-      2. Circular Lego boss sockets (Ø15.7 mm x 3.5 mm depth with 0.8 mm lead-in chamfer).
-      3. Straight through-bores (Ø6.7 mm) down through the adapter into the base's corner holes.
-    - 4 Locator Dowels (Ø6.0 mm x 16.0 mm with 1.0 mm lead-in chamfers) drop into base holes
-      to guarantee 100% concentric alignment during gluing.
+    Builds the One-Piece Snap-In-Between Adapter that connects the already-printed
+    Original Base Planter (Tray 1) and Original Extension Riser (Tray 3) with ZERO separate pins:
+    - Utilizes the Riser's existing 4 sticking-out male locking rods (Ø6.20mm, 28.0mm long)
+      passing straight through the Adapter's 4 Ø6.50mm bores and plunging 18.80mm deep
+      into the Base Planter's existing 4 Ø6.50mm corner holes.
+    - Fully observes and cradles the 4 Corner Conus shapes (8.40mm tall, R=11.50 -> 3.10mm)
+      in matching 45° Female Conus Sockets (R=11.75 -> 3.25mm), plus upper R=11.75mm corner column cradles.
+    - Supports BOTH perimeter edges of the Riser on top:
+      1. U-Channel Female Skirt Slot (216.30..224.30mm) cradling the Riser's 4.50mm Male Skirt (216.90..223.70mm).
+      2. Wide Flat Outer Landing Rim at Z_adapter = +13.70mm (224.30..240.40mm) supporting the Riser's
+         232.00 x 182.00mm Outer Stadium Wall flush with 0.00mm gap.
+    - Locks into the Base Planter on the bottom (Z_adapter <= 0.00mm):
+      1. Flat Rim & Corner Column Landing Face at Z_adapter = 0.00mm.
+      2. 7.50mm deep Downward Interlocking Inner Skirt (209.60..223.80mm) that plugs into the Base Planter's
+         224.40 x 174.40mm soil cavity and wraps around the 4 flat-topped R=11.50mm corner columns.
+      3. 4 Downward Male Conus Bosses (r=4.45 -> 3.25mm, 1.20mm deep) that nest into the Base Planter's
+         4 conical hole countersinks.
     """
-    lx, wy = cfg.outer_length_x, cfg.outer_width_y
-    wt, cr = cfg.wall_thickness, cfg.corner_radius
-    corner_pts = get_style_corner_points(cfg)
+    lx, wy = cfg.outer_length_x, cfg.outer_width_y  # 232.0, 182.0
+    wt, cr = cfg.wall_thickness, cfg.corner_radius  # 3.8, 18.0 (r_oval = cr + 48.0 = 66.0)
+    corner_pts = get_style_corner_points(cfg)  # [(±88.0, ±69.0)]
 
-    with BuildPart() as shell:
-        with BuildSketch(Plane.XY):
-            _sketch_2d_profile(cfg.style, lx + 2.0 * cfg.rim_ext, wy + 2.0 * cfg.rim_ext, cr + cfg.rim_ext)
-        extrude(amount=h_adapter)
+    # Key Z levels in Assembled Frame (Z=0.00 is Base Planter top rim z_base=195.00):
+    z_top = 13.70         # Supports Riser outer wall (z_riser = 135.50)
+    z_skirt_bot = 9.00    # Bottom of vertical U-slot for Riser's 4.50mm male skirt (z_riser = 140.00 is at Z=9.20)
+    z_slot_apex = 7.00    # 45° pointed roof apex of U-slot (9.00 - 2.00 = 7.00)
+    z_cone_top = 9.20     # Top of Riser's 8.40mm Conus (z_riser = 140.00)
+    z_cone_bot = 0.70     # Bottom of Female Conus socket (r=11.75 -> 3.25 over 8.50mm = exact 45°)
+    z_base_rim = 0.00     # Base Planter flat top rim (z_base = 195.00)
+    z_down_skirt = -7.50  # Bottom of downward inner skirt inside Base Planter cavity
 
-    in_x = lx - 2.0 * wt
-    in_y = wy - 2.0 * wt
-    in_r = max(4.0, cr - wt)
-    with BuildPart() as hollow:
-        with BuildSketch(Plane.XY.offset(-1.0)):
+    # Note: _sketch_2d_profile("oval_stadium", L, W, R) uses r_oval = min(W/2 - 1, R + 48.0).
+    # Base outer: L=232.0, W=182.0, R=18.0 -> r_oval = 66.0
+    # Base top rim outer: L=240.4, W=190.4, R=22.2 -> r_oval = 70.2
+    # Base inner cavity: L=224.4, W=174.4, R=14.2 -> r_oval = 62.2
+    # Riser male skirt outer: L=223.7, W=173.7, R=13.85 -> r_oval = 61.85
+    # Riser male skirt inner: L=216.9, W=166.9, R=10.45 -> r_oval = 58.45
+
+    out_x = lx + 2.0 * cfg.rim_ext  # 240.40
+    out_y = wy + 2.0 * cfg.rim_ext  # 190.40
+    out_r = cr + cfg.rim_ext        # 22.20 (r_oval = 70.20)
+
+    # Inner profile of main structural ring (209.60 x 159.60, r_oval = 54.80 -> R = 6.80)
+    in_x = 209.60
+    in_y = 159.60
+    in_r = 6.80
+
+    # Downward skirt outer profile (fits inside Base Planter 224.40 x 174.40, r_oval=62.20 cavity with 0.30mm clearance/side)
+    dskirt_out_x = 223.80
+    dskirt_out_y = 173.80
+    dskirt_out_r = 13.90  # r_oval = 61.90
+
+    # 1. Upper Adapter Body (Z = 0.00 to +13.70mm) with 1.0mm 45° top outer chamfer (at Z=13.70, which is Z_print=0!)
+    with BuildPart() as upper_body:
+        with BuildSketch(Plane.XY.offset(z_base_rim)) as s0:
+            _sketch_2d_profile(cfg.style, out_x, out_y, out_r)
+        with BuildSketch(Plane.XY.offset(z_top - 1.0)) as s1:
+            _sketch_2d_profile(cfg.style, out_x, out_y, out_r)
+        with BuildSketch(Plane.XY.offset(z_top)) as s2:
+            _sketch_2d_profile(cfg.style, out_x - 2.0, out_y - 2.0, out_r - 1.0)
+        loft([s0.sketch, s1.sketch], ruled=True)
+        loft([s1.sketch, s2.sketch], ruled=True)
+
+    # 2. Downward Interlocking Inner Skirt (Z = -7.50 to 0.00mm) with 1.20mm 45° bottom lead-in chamfer
+    with BuildPart() as down_skirt:
+        with BuildSketch(Plane.XY.offset(z_down_skirt)) as ds0:
+            _sketch_2d_profile(cfg.style, dskirt_out_x - 2.4, dskirt_out_y - 2.4, dskirt_out_r - 1.2)
+        with BuildSketch(Plane.XY.offset(z_down_skirt + 1.2)) as ds1:
+            _sketch_2d_profile(cfg.style, dskirt_out_x, dskirt_out_y, dskirt_out_r)
+        with BuildSketch(Plane.XY.offset(z_base_rim + 0.2)) as ds2:
+            _sketch_2d_profile(cfg.style, dskirt_out_x, dskirt_out_y, dskirt_out_r)
+        loft([ds0.sketch, ds1.sketch], ruled=True)
+        loft([ds1.sketch, ds2.sketch], ruled=True)
+
+    # 3. Hollow out the central open soil passage (209.60 x 159.60, r_oval=54.80) with 0.8mm 45° chamfer at Z_top
+    with BuildPart() as center_bore:
+        with BuildSketch(Plane.XY.offset(z_down_skirt - 1.0)):
             _sketch_2d_profile(cfg.style, in_x, in_y, in_r)
-        extrude(amount=h_adapter + 2.0)
+        extrude(amount=(z_top - z_down_skirt) + 2.0)
+        with BuildSketch(Plane.XY.offset(z_top - 0.8)) as cb0:
+            _sketch_2d_profile(cfg.style, in_x, in_y, in_r)
+        with BuildSketch(Plane.XY.offset(z_top + 0.01)) as cb1:
+            _sketch_2d_profile(cfg.style, in_x + 1.6, in_y + 1.6, in_r + 0.8)
+        loft([cb0.sketch, cb1.sketch], ruled=True)
 
-    adapter = shell.part - hollow.part
+    # 4. Corner Column Housings around (±88.0, ±69.0):
+    #    - Above Z=0.00mm up to Z=13.70mm: R=14.80mm solid cylinders (housing the R=11.75mm column/conus sockets)
+    #    - Below Z=0.00mm down to Z=-3.00mm: 45° tapered bolster (R=14.80 -> 11.80mm) inside the cavity
+    with BuildPart() as inner_corner_support:
+        for cx, cy in corner_pts:
+            with Locations((cx, cy, z_base_rim)):
+                Cylinder(radius=14.80, height=z_top - 0.8, align=(Align.CENTER, Align.CENTER, Align.MIN))
+            with Locations((cx, cy, z_top - 0.8)):
+                Cone(bottom_radius=14.80, top_radius=14.00, height=0.8, align=(Align.CENTER, Align.CENTER, Align.MIN))
+            with Locations((cx, cy, -3.00)):
+                Cone(bottom_radius=11.80, top_radius=14.80, height=3.00, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
-    with BuildPart() as pillars:
-        with Locations([(x, y, 0) for (x, y) in corner_pts]):
-            Cylinder(radius=cfg.pillar_radius + cfg.rim_ext, height=h_adapter, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    with BuildPart() as clip_env:
+        with BuildSketch(Plane.XY.offset(z_down_skirt - 1.0)):
+            _sketch_2d_profile(cfg.style, dskirt_out_x, dskirt_out_y, dskirt_out_r)
+        extrude(amount=abs(z_down_skirt) + 1.0)
+        with BuildSketch(Plane.XY.offset(z_base_rim)):
+            _sketch_2d_profile(cfg.style, out_x, out_y, out_r)
+        extrude(amount=z_top - 1.0)
+        with BuildSketch(Plane.XY.offset(z_top - 1.0)) as ce1:
+            _sketch_2d_profile(cfg.style, out_x, out_y, out_r)
+        with BuildSketch(Plane.XY.offset(z_top)) as ce2:
+            _sketch_2d_profile(cfg.style, out_x - 2.0, out_y - 2.0, out_r - 1.0)
+        loft([ce1.sketch, ce2.sketch], ruled=True)
 
-    adapter = adapter + pillars.part
-    adapter = adapter - hollow.part
+    corner_reinforce = inner_corner_support.part & clip_env.part
+    adapter = (upper_body.part + down_skirt.part - center_bore.part) + corner_reinforce
 
-    cutter = make_stacking_female_cutter(cfg, z_top=h_adapter)
-    for x, y in corner_pts:
-        adapter = adapter - cutter.moved(Location((x, y, 0)))
+    # Subtract 4 Base Planter Corner Columns (R = 11.80mm, 0.30mm clearance around Base Planter's R=11.50mm pillars)
+    # from everything below Z = 0.00mm!
+    with BuildPart() as base_pillar_cut:
+        for cx, cy in corner_pts:
+            with Locations((cx, cy, z_down_skirt - 1.0)):
+                Cylinder(radius=11.80, height=abs(z_down_skirt) + 1.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
-    with BuildPart() as through_bores:
-        with Locations([(x, y, -0.5) for (x, y) in corner_pts]):
-            Cylinder(radius=cfg.rod_6mm_bore_d / 2.0, height=h_adapter + 1.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    adapter = adapter - through_bores.part
+    adapter = adapter - base_pillar_cut.part
 
-    with BuildPart() as pins:
-        pin_r = 3.00
-        pin_len = 16.0
-        for (px, py) in [(-8.0, -8.0), (8.0, -8.0), (-8.0, 8.0), (8.0, 8.0)]:
-            with Locations((px, py, 0)):
-                Cylinder(radius=pin_r, height=pin_len, align=(Align.CENTER, Align.CENTER, Align.MIN))
-                with Locations((0, 0, pin_len - 1.0)):
-                    Cone(bottom_radius=pin_r, top_radius=pin_r - 1.0, height=1.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
-                with Locations((0, 0, 0)):
-                    Cone(bottom_radius=pin_r - 1.0, top_radius=pin_r, height=1.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # Add 4 Downward Male Conus Bosses at (±88.0, ±69.0), Z = -1.20 to 0.00mm
+    # Nests directly into the Base Planter's conical hole countersinks (r = 4.65 -> 3.25mm)!
+    with BuildPart() as bottom_conus_bosses:
+        for cx, cy in corner_pts:
+            with Locations((cx, cy, -1.20)):
+                Cone(bottom_radius=3.25, top_radius=4.45, height=1.25, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
-    return adapter, pins.part
+    adapter = adapter + bottom_conus_bosses.part
+
+    # 5. Cut the Top U-Channel Female Skirt Slot (216.30..224.30mm) from Z = +9.00 to +13.70mm,
+    #    with a 45° pointed roof from Z = +9.00 down to +7.00mm (100% support-free when inverted!)
+    #    Riser male skirt is 216.90..223.70mm (r_oval = 58.45..61.85), so 216.30..224.30mm gives 0.30mm clearance per side!
+    slot_in_x, slot_in_y, slot_in_r = 216.30, 166.30, 10.15    # r_oval = 58.15
+    slot_out_x, slot_out_y, slot_out_r = 224.30, 174.30, 14.15 # r_oval = 62.15
+    slot_mid_x, slot_mid_y, slot_mid_r = 220.30, 170.30, 12.15 # r_oval = 60.15
+
+    with BuildPart() as skirt_slot_outer:
+        with BuildSketch(Plane.XY.offset(z_slot_apex)) as ss0:
+            _sketch_2d_profile(cfg.style, slot_mid_x, slot_mid_y, slot_mid_r)
+        with BuildSketch(Plane.XY.offset(z_skirt_bot)) as ss1:
+            _sketch_2d_profile(cfg.style, slot_out_x, slot_out_y, slot_out_r)
+        with BuildSketch(Plane.XY.offset(z_top - 0.5)) as ss2:
+            _sketch_2d_profile(cfg.style, slot_out_x, slot_out_y, slot_out_r)
+        with BuildSketch(Plane.XY.offset(z_top + 0.05)) as ss3:
+            _sketch_2d_profile(cfg.style, slot_out_x + 1.1, slot_out_y + 1.1, slot_out_r + 0.55)
+        loft([ss0.sketch, ss1.sketch], ruled=True)
+        loft([ss1.sketch, ss2.sketch], ruled=True)
+        loft([ss2.sketch, ss3.sketch], ruled=True)
+
+    with BuildPart() as skirt_slot_inner:
+        with BuildSketch(Plane.XY.offset(z_slot_apex - 0.1)) as si0:
+            _sketch_2d_profile(cfg.style, slot_mid_x, slot_mid_y, slot_mid_r)
+        with BuildSketch(Plane.XY.offset(z_skirt_bot)) as si1:
+            _sketch_2d_profile(cfg.style, slot_in_x, slot_in_y, slot_in_r)
+        with BuildSketch(Plane.XY.offset(z_top - 0.5)) as si2:
+            _sketch_2d_profile(cfg.style, slot_in_x, slot_in_y, slot_in_r)
+        with BuildSketch(Plane.XY.offset(z_top + 0.1)) as si3:
+            _sketch_2d_profile(cfg.style, slot_in_x - 1.2, slot_in_y - 1.2, slot_in_r - 0.6)
+        loft([si0.sketch, si1.sketch], ruled=True)
+        loft([si1.sketch, si2.sketch], ruled=True)
+        loft([si2.sketch, si3.sketch], ruled=True)
+
+    u_slot_cutter = skirt_slot_outer.part - skirt_slot_inner.part
+    adapter = adapter - u_slot_cutter
+
+    # 6. Cut the 4 Corner Receiving Sockets (Female 45° Conus Socket + Upper Corner Column Cradle + Ø6.50mm Through-Bore)
+    with BuildPart() as corner_cutters:
+        for cx, cy in corner_pts:
+            # Continuous Ø6.50mm (r=3.25mm) rod through-bore from bottom of Conus boss (-2.0mm) to top (+15.0mm)
+            with Locations((cx, cy, -2.0)):
+                Cylinder(radius=3.25, height=17.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
+            # Female 45° Conus Socket (Z = +0.70 to +9.20mm, r = 3.25 -> 11.75mm, exact 45.0° slope!)
+            with Locations((cx, cy, z_cone_bot)):
+                Cone(bottom_radius=3.25, top_radius=11.75, height=z_cone_top - z_cone_bot, align=(Align.CENTER, Align.CENTER, Align.MIN))
+            # Upper Corner Column Cradle (Z = +9.20 to +13.70mm, r = 11.75mm)
+            with Locations((cx, cy, z_cone_top)):
+                Cylinder(radius=11.75, height=z_top - z_cone_top + 0.1, align=(Align.CENTER, Align.CENTER, Align.MIN))
+            # 0.5mm 45° entry chamfer at top of Corner Column Cradle (Z = +13.20 to +13.70mm)
+            with Locations((cx, cy, z_top - 0.50)):
+                Cone(bottom_radius=11.75, top_radius=12.25, height=0.55, align=(Align.CENTER, Align.CENTER, Align.MIN))
+
+    adapter = adapter - corner_cutters.part
+
+    # Print-ready orientation: flipped 180° around X so Z_adapter = +13.70mm sits flat on Z_print = 0.00mm!
+    adapter_print = Pos(0, 0, z_top) * Rot(180, 0, 0) * adapter
+
+    return adapter_print, adapter
+
+
 
 
 def generate_complete_planter_project(

@@ -84,6 +84,125 @@ class P2STolerances:
     m4_head_d: float = 7.60
 
 
+# Master Profile: UJOYBIO Elite PLA+ (1kg Spool, 195-220 C) @ 0.24mm Layer Height (Local Test Profile)
+UJOYBIO_ELITE_PLA_PLUS_FILAMENT_OVERRIDES: Dict[str, List[str]] = {
+    "filament_type": ["PLA"],
+    "filament_vendor": ["UJOYBIO"],
+    "filament_settings_id": ["UJOYBIO Elite PLA+ @BBL P2S 0.4 nozzle"],
+    "nozzle_temperature_range_low": ["195"],
+    "nozzle_temperature_range_high": ["220"],
+    "nozzle_temperature_initial_layer": ["210"],
+    "nozzle_temperature": ["215"],
+    "textured_plate_temp": ["60"],
+    "textured_plate_temp_initial_layer": ["60"],
+    "hot_plate_temp": ["60"],
+    "hot_plate_temp_initial_layer": ["60"],
+    "filament_max_volumetric_speed": ["15"],
+    "filament_diameter": ["1.75"],
+    "filament_flow_ratio": ["0.98"],
+}
+
+UJOYBIO_ELITE_PLA_PLUS_024MM_PROCESS_OVERRIDES: Dict[str, str] = {
+    "layer_height": "0.24",
+    "initial_layer_print_height": "0.24",
+    "initial_layer_speed": "35",
+    "initial_layer_infill_speed": "75",
+    "outer_wall_speed": "150",
+    "inner_wall_speed": "250",
+    "sparse_infill_speed": "270",
+    "internal_solid_infill_speed": "200",
+    "travel_speed": "400",
+}
+
+UJOYBIO_ELITE_PLA_PLUS_020MM_PRECISION_PROCESS_OVERRIDES: Dict[str, str] = {
+    "layer_height": "0.20",
+    "initial_layer_print_height": "0.20",
+    "wall_loops": "3",
+    "top_shell_layers": "5",
+    "bottom_shell_layers": "4",
+    "top_shell_thickness": "1.0",
+    "bottom_shell_thickness": "0.8",
+    "outer_wall_speed": "80",
+    "inner_wall_speed": "160",
+    "sparse_infill_speed": "220",
+    "internal_solid_infill_speed": "160",
+    "top_surface_speed": "80",
+    "initial_layer_speed": "30",
+    "initial_layer_infill_speed": "60",
+    "travel_speed": "400",
+    "outer_wall_acceleration": "3000",
+    "top_surface_acceleration": "2000",
+    "precise_outer_wall": "1",
+    "infill_wall_overlap": "12%",
+    "seam_position": "aligned",
+    "seam_gap": "10%",
+}
+
+UJOYBIO_ELITE_PLA_PLUS_016MM_PRECISION_PROCESS_OVERRIDES: Dict[str, str] = {
+    "layer_height": "0.16",
+    "initial_layer_print_height": "0.20",
+    "wall_loops": "3",
+    "top_shell_layers": "6",
+    "bottom_shell_layers": "5",
+    "top_shell_thickness": "0.96",
+    "bottom_shell_thickness": "0.80",
+    "outer_wall_speed": "60",
+    "inner_wall_speed": "120",
+    "sparse_infill_speed": "200",
+    "internal_solid_infill_speed": "140",
+    "top_surface_speed": "60",
+    "initial_layer_speed": "30",
+    "initial_layer_infill_speed": "50",
+    "travel_speed": "400",
+    "outer_wall_acceleration": "2000",
+    "top_surface_acceleration": "2000",
+    "precise_outer_wall": "1",
+    "infill_wall_overlap": "10%",
+    "seam_position": "aligned",
+    "seam_gap": "10%",
+}
+
+
+def apply_ujoybio_elite_pla_plus_profile(
+    filament_dict: dict,
+    process_dict: dict,
+    layer_height: str = "0.24",
+) -> Tuple[dict, dict]:
+    """
+    Applies the UJOYBIO Elite PLA+ (1kg Spool) master filament and process overrides
+    to flattened Bambu Studio JSON dictionaries.
+
+    Supported layer heights:
+      - "0.24": Fast draft / structural (planters, saucers, bulky boxes)
+      - "0.20": Precision standard (smooth perimeters, sharp debossing, tight mechanical fits)
+      - "0.16": Ultra-precision (miniature details, shallow overhangs, fine threads)
+    """
+    f_out = dict(filament_dict)
+    f_out.update(UJOYBIO_ELITE_PLA_PLUS_FILAMENT_OVERRIDES)
+    p_out = dict(process_dict)
+
+    if layer_height in ("0.16", "0.16mm"):
+        p_out.update(UJOYBIO_ELITE_PLA_PLUS_016MM_PRECISION_PROCESS_OVERRIDES)
+        f_out["nozzle_temperature"] = ["204"]
+        f_out["nozzle_temperature_initial_layer"] = ["208"]
+        f_out["textured_plate_temp"] = ["55"]
+        f_out["textured_plate_temp_initial_layer"] = ["60"]
+    elif layer_height in ("0.20", "0.2", "0.20mm"):
+        p_out.update(UJOYBIO_ELITE_PLA_PLUS_020MM_PRECISION_PROCESS_OVERRIDES)
+        f_out["nozzle_temperature"] = ["208"]
+        f_out["nozzle_temperature_initial_layer"] = ["210"]
+        f_out["textured_plate_temp"] = ["55"]
+        f_out["textured_plate_temp_initial_layer"] = ["60"]
+    else:
+        p_out.update(UJOYBIO_ELITE_PLA_PLUS_024MM_PROCESS_OVERRIDES)
+        f_out["nozzle_temperature"] = ["215"]
+        f_out["nozzle_temperature_initial_layer"] = ["210"]
+        f_out["textured_plate_temp"] = ["60"]
+        f_out["textured_plate_temp_initial_layer"] = ["60"]
+
+    return f_out, p_out
+
+
 def make_teardrop_cylinder(
     diameter: float,
     length: float,

@@ -108,3 +108,33 @@ Whenever packing multiple trays/modules and multi-color AMS sub-parts into a sin
   * **2D-to-3D Bridge:** Import `.dxf` / `.svg` profiles drafted in CADCraft into `build123d` (`import_svg` / `ezdxf`) and extrude/loft them into support-free 3D B-Rep solids.
 
   - **Flush Inlay & Engraving Depth Standard (`1.60 – 2.00 mm` / `8–10 Layers`):** Never make multi-color flush inlays, debossed recesses, or standalone decorative badges shallow (`0.60 mm` / 3 layers), as light filaments (Yellow, Gold, Orange, White) over dark shells (Black, Charcoal) suffer from optical color bleed-through and fragile geometry. Always design inlays, recesses, and standalone badges at **`1.60 – 2.00 mm` depth (`8–10 layers` at `0.20 mm`)** (e.g. `1.80 mm` on a `3.00 mm` lid leaving `1.20 mm` backing; `1.60 mm` on a `2.40 mm` floor leaving `0.80 mm` / 4 solid waterproof layers).
+
+---
+
+## 5. Specific Named Filament & Process Profiles Catalog (Local Workspace — Not Global Defaults)
+
+* **Catalog Architecture:** Custom filament and process profiles are stored in [`references/filament-profiles.md`](./references/filament-profiles.md) and `.agents/skills/bambu-studio-ai/resources/profiles/` as **specific, named profiles** (never forced as global defaults across unrelated projects).
+* When the user requests a specific filament profile by name, or provides an imported `.3mf` using it, apply that profile; when the user reports test results or researches a new filament type, add or refine its entry in [`references/filament-profiles.md`](./references/filament-profiles.md).
+
+### Master Profile: **UJOYBIO Elite PLA+ (`1 kg` Spool, `195–220 °C`) @ `0.24 mm` Layer Height**
+
+#### 🧵 Filament Settings Profile
+| Setting Category | Parameter | Recommended Value |
+| :--- | :--- | :--- |
+| **Temperature** | **Nozzle (First Layer)** | **`210 °C`** |
+| **Temperature** | **Nozzle (Other Layers)** | **`215 °C`** *(Extra heat for thick `0.24 mm` layers)* |
+| **Temperature** | **Bed (Textured PEI Plate)** | **`60 °C`** *(Ensures zero warping)* |
+| **Flow Limits** | **Max Volumetric Speed** | **`15 mm³/s`** *(High-speed safety cap)* |
+| **Flow Limits** | **Filament Diameter** | **`1.75 mm`** |
+| **Flow Limits** | **Flow Ratio** | **`0.98`** *(Standard generic starting point)* |
+
+#### 🏎️ Process Speed Settings Profile (`0.24 mm` Layer Height)
+| Print Feature | Recommended Speed | Why This Value? |
+| :--- | :--- | :--- |
+| **Initial Layer** | **`35 mm/s`** | Gives the thick line time to safely stick to the bed. |
+| **Initial Layer Infill** | **`75 mm/s`** | Fills the first layer quickly but safely. |
+| **Outer Wall** | **`150 mm/s`** | Caps visible walls to guarantee a beautiful surface finish. |
+| **Inner Wall** | **`250 mm/s`** | Speeds up hidden structural walls. |
+| **Sparse Infill** | **`270 mm/s`** | Maximizes high-speed printing inside the part. |
+| **Internal Solid Infill** | **`200 mm/s`** | Ensures strong, dense internal floors/ceilings. |
+| **Travel Speed** | **`300 – 500 mm/s`** | Default printer capability for non-printing moves. |

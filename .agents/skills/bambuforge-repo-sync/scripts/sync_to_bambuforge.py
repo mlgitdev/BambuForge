@@ -29,9 +29,11 @@ DEFAULT_SOURCE = _BASE_DIR / "3D-Automation"
 DEFAULT_TARGET = _BASE_DIR / "BambuForge"
 
 SANITIZATION_RULES = [
-    (rf"E:(\\\\|[\\/]){_PRJ_KEYWORD}(\\\\|[\\/])3dModeling(\\\\|[\\/])3D-Automation", "<WORKSPACE_ROOT>"),
-    (rf"E:(\\\\|[\\/]){_PRJ_KEYWORD}(\\\\|[\\/])3dModeling(\\\\|[\\/])BambuForge", "<WORKSPACE_ROOT>"),
-    (rf"E:(\\\\|[\\/]){_PRJ_KEYWORD}(\\\\|[\\/])", "<PROJECTS_ROOT>/"),
+    (rf"file:///([eE]:(\\\\|[\\/]))?{_PRJ_KEYWORD}(\\\\|[\\/])3dModeling(\\\\|[\\/])3D-Automation[\\/]?", ""),
+    (rf"file:///([eE]:(\\\\|[\\/]))?{_PRJ_KEYWORD}(\\\\|[\\/])3dModeling(\\\\|[\\/])BambuForge[\\/]?", ""),
+    (rf"[eE]:(\\\\|[\\/]){_PRJ_KEYWORD}(\\\\|[\\/])3dModeling(\\\\|[\\/])3D-Automation", "<WORKSPACE_ROOT>"),
+    (rf"[eE]:(\\\\|[\\/]){_PRJ_KEYWORD}(\\\\|[\\/])3dModeling(\\\\|[\\/])BambuForge", "<WORKSPACE_ROOT>"),
+    (rf"[eE]:(\\\\|[\\/]){_PRJ_KEYWORD}(\\\\|[\\/])", "<PROJECTS_ROOT>/"),
     (rf"C:(\\\\|[\\/])Users(\\\\|[\\/]){_USER_KEYWORD}(\\\\|[\\/])\.gemini(\\\\|[\\/])antigravity", "<APP_DATA_DIR>"),
     (rf"C:(\\\\|[\\/])Users(\\\\|[\\/]){_USER_KEYWORD}", "<USER_HOME>"),
     (rf"[Cc]:/[Uu]sers/{_USER_KEYWORD}", "<USER_HOME>"),
@@ -48,6 +50,8 @@ FORBIDDEN_PATTERNS = [
 
 SYNC_ITEMS = [
     ("AGENTS.md", "AGENTS.md"),
+    ("FILAMENTS.md", "FILAMENTS.md"),
+    ("profiles", "profiles"),
     (".agents/skills/3d-print-modeling", ".agents/skills/3d-print-modeling"),
     (".agents/skills/bambu-studio-ai", ".agents/skills/bambu-studio-ai"),
     (".agents/skills/self-learning-cad", ".agents/skills/self-learning-cad"),
@@ -63,8 +67,18 @@ def sanitize_text(text: str) -> str:
     """Applies privacy replacements to file contents."""
     sanitized = text
     for pattern, replacement in SANITIZATION_RULES:
-        sanitized = re.sub(pattern, replacement, sanitized)
+        sanitized = re.sub(pattern, replacement, sanitized, flags=re.IGNORECASE)
     return sanitized
+
+
+def audit_text_for_pii(text: str, display_name: str) -> List[str]:
+    """Audits text content for forbidden PII / sensitive patterns."""
+    violations = []
+    for line_no, line in enumerate(text.splitlines(), start=1):
+        for pat in FORBIDDEN_PATTERNS:
+            if pat.search(line):
+                violations.append(f"{display_name}:{line_no} -> {line.strip()[:100]}")
+    return violations
 
 
 def audit_file_for_pii(file_path: Path) -> List[str]:
@@ -76,16 +90,13 @@ def audit_file_for_pii(file_path: Path) -> List[str]:
 
     try:
         content = file_path.read_text(encoding="utf-8", errors="ignore")
-        for line_no, line in enumerate(content.splitlines(), start=1):
-            for pat in FORBIDDEN_PATTERNS:
-                if pat.search(line):
-                    violations.append(f"{file_path.name}:{line_no} -> {line.strip()[:100]}")
+        return audit_text_for_pii(content, file_path.name)
     except Exception as e:
         violations.append(f"{file_path.name}: Failed to read ({e})")
     return violations
 
 
-def copy_and_sanitize(src: Path, dst: Path, dry_run: bool = False) -> Tuple[int, int]:
+def copy_and_sanitize(src: Path, dst: Path, dry_run: bool = False, memory_violations: List[str] = None) -> Tuple[int, int]:
     """Copies file or directory recursively from src to dst with sanitization."""
     copied_count = 0
     skipped_count = 0
@@ -99,6 +110,8 @@ def copy_and_sanitize(src: Path, dst: Path, dry_run: bool = False) -> Tuple[int,
         else:
             text = src.read_text(encoding="utf-8", errors="ignore")
             sanitized = sanitize_text(text)
+            if memory_violations is not None:
+                memory_violations.extend(audit_text_for_pii(sanitized, src.name))
             if not dry_run:
                 dst.write_text(sanitized, encoding="utf-8")
             copied_count += 1
@@ -124,6 +137,8 @@ def copy_and_sanitize(src: Path, dst: Path, dry_run: bool = False) -> Tuple[int,
             else:
                 text = src_file.read_text(encoding="utf-8", errors="ignore")
                 sanitized = sanitize_text(text)
+                if memory_violations is not None:
+                    memory_violations.extend(audit_text_for_pii(sanitized, str(rel_root / file_name)))
                 if not dry_run:
                     dst_file.write_text(sanitized, encoding="utf-8")
                 copied_count += 1
@@ -184,6 +199,7 @@ def main():
         sys.exit(1)
 
     total_synced = 0
+    dry_run_violations = []
     for rel_src, rel_dst in SYNC_ITEMS:
         src_path = args.source / rel_src
         dst_path = args.target / rel_dst
@@ -193,7 +209,7 @@ def main():
             continue
 
         print(f"[SYNC] {rel_src} -> {rel_dst} ...")
-        copied, skipped = copy_and_sanitize(src_path, dst_path, dry_run=args.dry_run)
+        copied, skipped = copy_and_sanitize(src_path, dst_path, dry_run=args.dry_run, memory_violations=dry_run_violations if args.dry_run else None)
         total_synced += copied
 
     print(f"\n[OK] Processed {total_synced} files.")
@@ -205,14 +221,17 @@ def main():
     # Strict Zero-PII Audit
     print("\n--- Running Strict PII & Privacy Verification ---")
     all_violations = []
-    for root, _, files in os.walk(args.target):
-        if ".git" in root:
-            continue
-        for f in files:
-            p = Path(root) / f
-            violations = audit_file_for_pii(p)
-            if violations:
-                all_violations.extend(violations)
+    if args.dry_run:
+        all_violations = dry_run_violations
+    else:
+        for root, _, files in os.walk(args.target):
+            if ".git" in root:
+                continue
+            for f in files:
+                p = Path(root) / f
+                violations = audit_file_for_pii(p)
+                if violations:
+                    all_violations.extend(violations)
 
     if all_violations:
         print(f"[ERROR] CRITICAL: Found {len(all_violations)} PII/Privacy violation(s) in target repository:")
