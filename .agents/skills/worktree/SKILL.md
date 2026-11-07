@@ -70,13 +70,12 @@ flowchart TD
 # 2. List all active worktrees
 .\scripts\worktree.ps1 list
 
-# 3. Safely remove a worktree after completion
-.\scripts\worktree.ps1 remove model/<model-name>
-# Force remove if untracked build files exist:
-.\scripts\worktree.ps1 remove model/<model-name> -Force
+# 3. Complete task: merge back into main, remove worktree, AND delete temporary agent branch
+.\scripts\worktree.ps1 finish model/<model-name> main
 
-# 4. Merge completed work back into main
+# (Individual sub-steps if needed separately):
 .\scripts\worktree.ps1 merge-back model/<model-name> main
+.\scripts\worktree.ps1 remove model/<model-name> -DeleteBranch
 
 # 5. Fetch updates from sibling BambuForge remote
 .\scripts\worktree.ps1 sync-remote bambuforge
@@ -158,28 +157,18 @@ git add models/<model-name>/
 git commit -m "feat(models): add <model-name> parametric CAD and assembly guide"
 ```
 
-### Step 6: Integrate & Deliver
-Choose one of two integration routes:
-- **Route A (Local Merge to main):**
-  ```powershell
-  cd ..\..
-  .\scripts\worktree.ps1 merge-back model/<model-name> main
-  ```
-- **Route B (Push to GitHub / PR via `gh`):**
-  ```powershell
-  git push origin model/<model-name>
-  gh pr create --title "feat(models): add <model-name>" --body "Implemented parametric model..."
-  ```
-- **Route C (Sync to Sibling BambuForge):**
-  ```powershell
-  python ".agents\skills\bambuforge-repo-sync\scripts\sync_to_bambuforge.py" --bump patch --commit-msg "feat(models): sync <model-name>"
-  ```
-
-### Step 7: Clean Up Worktree
+### Step 6: Finish Worktree, Merge to `main` & Delete Temporary Agent Branch
+Always merge back into `main`, remove the `.worktrees/*` folder, and delete the temporary agent-created branch so no orphan branches accumulate:
 ```powershell
 cd ..\..
-.\scripts\worktree.ps1 remove model/<model-name>
+# One-command merge + worktree removal + temporary branch deletion:
+.\scripts\worktree.ps1 finish model/<model-name> main
 ```
+If skills, rules, or profiles were also updated, synchronize to `BambuForge` and commit both repositories atomically:
+```powershell
+python ".agents\skills\bambuforge-repo-sync\scripts\sync_to_bambuforge.py" --bump patch --commit-source --commit-msg "feat(skills): sync <descriptor>"
+```
+- **Zero Leftover Agent Branches Rule:** Never leave temporary agent-created branches (`model/*`, `feat/*`, `fix/*`, `sub/*`, `docs/*`) behind after merging, and never copy files manually out of a worktree without removing the worktree and deleting the temporary branch. **Never delete branches explicitly created by the user.**
 
 ---
 

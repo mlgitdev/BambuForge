@@ -3,8 +3,9 @@
 # Usage:
 #   ./scripts/worktree.sh new <branch-name> [base-branch]
 #   ./scripts/worktree.sh list
-#   ./scripts/worktree.sh remove <branch-or-folder> [-f|--force]
+#   ./scripts/worktree.sh remove <branch-or-folder> [-f|--force] [-d|--delete-branch]
 #   ./scripts/worktree.sh merge-back <source-branch> [target-branch]
+#   ./scripts/worktree.sh finish <source-branch> [target-branch] [-f|--force]
 #   ./scripts/worktree.sh sync-remote [remote-name]
 #   ./scripts/worktree.sh prune
 
@@ -28,8 +29,9 @@ show_usage() {
     echo "Usage:"
     echo "  ./scripts/worktree.sh new <branch-name> [base-branch]      Create an isolated worktree under .worktrees/"
     echo "  ./scripts/worktree.sh list                                 List all active worktrees"
-    echo "  ./scripts/worktree.sh remove <branch-or-folder> [-f]       Safely remove a worktree"
+    echo "  ./scripts/worktree.sh remove <branch-or-folder> [-f] [-d]  Safely remove a worktree (and optional branch)"
     echo "  ./scripts/worktree.sh merge-back <source> [target]         Merge feature/sub branch back into target (default: main)"
+    echo "  ./scripts/worktree.sh finish <source> [target] [-f]        Merge into target, remove worktree, and delete agent branch"
     echo "  ./scripts/worktree.sh sync-remote [remote-name]            Fetch and sync with sibling bambuforge or origin"
     echo "  ./scripts/worktree.sh prune                                Prune stale/deleted worktree references"
     echo ""
@@ -53,10 +55,14 @@ ACTION="${1:-help}"
 BRANCH="$2"
 BASE="${3:-main}"
 FORCE=0
+DELETE_BRANCH=0
 
 for arg in "$@"; do
     if [ "$arg" = "-f" ] || [ "$arg" = "--force" ]; then
         FORCE=1
+    fi
+    if [ "$arg" = "-d" ] || [ "$arg" = "--delete-branch" ]; then
+        DELETE_BRANCH=1
     fi
 done
 
@@ -135,7 +141,43 @@ case "$ACTION" in
             git worktree remove "$TARGET_PATH"
         fi
         git worktree prune
+        if [ "$DELETE_BRANCH" -eq 1 ] && git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+            if [ "$FORCE" -eq 1 ]; then
+                git branch -D "$BRANCH"
+            else
+                git branch -d "$BRANCH"
+            fi
+        fi
         echo "[✓] Worktree removed and pruned successfully."
+        ;;
+
+    finish)
+        if [ -z "$BRANCH" ]; then
+            echo "[-] Error: Usage: ./scripts/worktree.sh finish <source-branch> [target-branch]" >&2
+            exit 1
+        fi
+        SOURCE="$BRANCH"
+        TARGET="${BASE:-main}"
+        cd "$REPO_ROOT"
+        echo "[+] Merging branch '$SOURCE' into target '$TARGET'..."
+        git checkout "$TARGET"
+        git merge --no-ff "$SOURCE" -m "feat(worktree): merge $SOURCE into $TARGET"
+        FOLDER_NAME="$(sanitize_branch "$SOURCE")"
+        WT_PATH="$WORKTREES_DIR/$FOLDER_NAME"
+        if [ -d "$WT_PATH" ]; then
+            echo "[+] Removing merged worktree at $WT_PATH..."
+            if [ "$FORCE" -eq 1 ]; then
+                git worktree remove --force "$WT_PATH"
+            else
+                git worktree remove "$WT_PATH"
+            fi
+        fi
+        git worktree prune
+        if git show-ref --verify --quiet "refs/heads/$SOURCE"; then
+            echo "[+] Deleting merged temporary branch '$SOURCE'..."
+            git branch -d "$SOURCE"
+        fi
+        echo "[✓] Finished '$SOURCE': merged into '$TARGET', worktree removed, and temporary branch deleted."
         ;;
 
     merge-back)

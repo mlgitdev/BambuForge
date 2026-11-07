@@ -2,15 +2,16 @@
 # Usage:
 #   .\scripts\worktree.ps1 new <branch-name> [base-branch]
 #   .\scripts\worktree.ps1 list
-#   .\scripts\worktree.ps1 remove <branch-or-folder> [-Force]
+#   .\scripts\worktree.ps1 remove <branch-or-folder> [-Force] [-DeleteBranch]
 #   .\scripts\worktree.ps1 merge-back <source-branch> [target-branch]
+#   .\scripts\worktree.ps1 finish <source-branch> [target-branch] [-Force]
 #   .\scripts\worktree.ps1 sync-remote [remote-name]
 #   .\scripts\worktree.ps1 prune
 #   .\scripts\worktree.ps1 help
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("new", "list", "remove", "merge-back", "sync-remote", "prune", "help")]
+    [ValidateSet("new", "list", "remove", "merge-back", "finish", "sync-remote", "prune", "help")]
     [string]$Action = "help",
 
     [Parameter(Position = 1)]
@@ -19,7 +20,9 @@ param(
     [Parameter(Position = 2)]
     [string]$Base = "main",
 
-    [switch]$Force
+    [switch]$Force,
+
+    [switch]$DeleteBranch
 )
 
 $GitCommonDir = (git rev-parse --git-common-dir 2>$null)
@@ -40,8 +43,9 @@ function Show-Usage {
     Write-Host "Usage:"
     Write-Host "  .\scripts\worktree.ps1 new <branch-name> [base-branch]      Create an isolated worktree under .worktrees/" -ForegroundColor Yellow
     Write-Host "  .\scripts\worktree.ps1 list                                 List all active worktrees" -ForegroundColor Yellow
-    Write-Host "  .\scripts\worktree.ps1 remove <branch-or-folder> [-Force]   Safely remove a worktree" -ForegroundColor Yellow
+    Write-Host "  .\scripts\worktree.ps1 remove <branch-or-folder> [-Force] [-DeleteBranch]  Safely remove a worktree (and optional branch)" -ForegroundColor Yellow
     Write-Host "  .\scripts\worktree.ps1 merge-back <source> [target]         Merge feature/sub branch back into target (default: main)" -ForegroundColor Yellow
+    Write-Host "  .\scripts\worktree.ps1 finish <source> [target] [-Force]    Merge into target, remove worktree, and delete agent branch" -ForegroundColor Yellow
     Write-Host "  .\scripts\worktree.ps1 sync-remote [remote-name]            Fetch and sync with sibling bambuforge or origin" -ForegroundColor Yellow
     Write-Host "  .\scripts\worktree.ps1 prune                                Prune stale/deleted worktree references" -ForegroundColor Yellow
     Write-Host ""
@@ -172,7 +176,46 @@ function Remove-Worktree {
     }
 
     git worktree prune
+    if ($DeleteBranch -and (git branch --list $Branch)) {
+        git branch -d $Branch
+        if ($LASTEXITCODE -ne 0 -and $Force) {
+            git branch -D $Branch
+        }
+    }
     Write-Host "[OK] Worktree removed and pruned successfully." -ForegroundColor Green
+}
+
+function Finish-Worktree {
+    if (-not $Branch) {
+        Write-Error "Missing required source branch. Example: .\scripts\worktree.ps1 finish model/desk-organizer main"
+        exit 1
+    }
+
+    $source = $Branch
+    $target = if ($Base) { $Base } else { "main" }
+
+    Push-Location $RepoRoot
+    try {
+        Merge-Back
+        $folderName = Sanitize-BranchPath $source
+        $wtPath = Join-Path $WorktreesDir $folderName
+        if (Test-Path $wtPath) {
+            Write-Host "[+] Removing merged worktree at $wtPath..." -ForegroundColor Yellow
+            if ($Force) {
+                git worktree remove --force $wtPath
+            } else {
+                git worktree remove $wtPath
+            }
+        }
+        git worktree prune
+        if (git branch --list $source) {
+            Write-Host "[+] Deleting merged temporary branch '$source'..." -ForegroundColor Yellow
+            git branch -d $source
+        }
+        Write-Host "[OK] Finished '$source': merged into '$target', worktree removed, and temporary branch deleted." -ForegroundColor Green
+    } finally {
+        Pop-Location
+    }
 }
 
 function Merge-Back {
@@ -215,6 +258,7 @@ switch ($Action) {
     "list"        { List-Worktrees }
     "remove"      { Remove-Worktree }
     "merge-back"  { Merge-Back }
+    "finish"      { Finish-Worktree }
     "sync-remote" { Sync-Remote }
     "prune"       { git worktree prune; Write-Host "[OK] Worktree list pruned." -ForegroundColor Green }
     default       { Show-Usage }

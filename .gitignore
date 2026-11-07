@@ -10,6 +10,7 @@ __pycache__/
 worktrees/
 
 # Temporary Slicer & CAD files
+result.json
 *.tmp.3mf
 *.verified.3mf
 *.projtmp.3mf

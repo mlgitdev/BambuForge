@@ -182,6 +182,7 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Simulate sync without modifying target")
     parser.add_argument("--bump", choices=["patch", "minor", "major"], help="Bump semantic version")
     parser.add_argument("--commit-msg", type=str, help="Commit message to commit synchronized changes")
+    parser.add_argument("--commit-source", action="store_true", help="Also stage and commit local changes in the source 3D-Automation repository")
     parser.add_argument("--create-pr", action="store_true", help="Open a GitHub Pull Request via gh")
     args = parser.parse_args()
 
@@ -247,10 +248,41 @@ def main():
 
     # Git staging & commit
     if args.commit_msg and not args.dry_run:
-        print("\n--- Committing Changes to Git ---")
+        print("\n--- Committing Changes to Target Repo (BambuForge) ---")
         subprocess.run(["git", "add", "."], cwd=args.target, check=True)
-        subprocess.run(["git", "commit", "-m", args.commit_msg], cwd=args.target, check=True)
-        print("[GIT] Changes successfully committed.")
+        diff_tgt = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=args.target)
+        if diff_tgt.returncode != 0:
+            subprocess.run(["git", "commit", "-m", args.commit_msg], cwd=args.target, check=True)
+            print("[GIT] Target repo changes successfully committed.")
+        else:
+            print("[GIT] Target repo already up to date (nothing new to commit).")
+
+        if (args.source / ".git").exists():
+            src_status = subprocess.check_output(["git", "status", "--porcelain"], cwd=args.source, text=True).strip()
+            if args.commit_source:
+                print("\n--- Committing Atomic Local Changes to Source Workspace ---")
+                if src_status:
+                    subprocess.run(["git", "add", "-A"], cwd=args.source, check=True)
+                    subprocess.run(["git", "commit", "-m", args.commit_msg], cwd=args.source, check=True)
+                    print("[GIT] Source workspace changes successfully committed locally.")
+                else:
+                    print("[GIT] Source workspace already clean.")
+            elif src_status:
+                print(
+                    "\n[WARNING] Source workspace still has uncommitted local changes! "
+                    "Remember to record an atomic local git commit on 'main' (or pass --commit-source)."
+                )
+
+    # Check for leftover temporary agent branches in source workspace
+    if (args.source / ".git").exists():
+        branches_out = subprocess.check_output(["git", "branch", "--format=%(refname:short)"], cwd=args.source, text=True)
+        agent_prefixes = ("model/", "feat/", "fix/", "sub/", "task/", "docs/", "chore/")
+        leftover = [b.strip() for b in branches_out.splitlines() if b.strip().startswith(agent_prefixes)]
+        if leftover:
+            print(
+                f"\n[WARNING] Leftover temporary agent branch(es) detected in source workspace: {leftover}. "
+                "Merge and delete temporary agent branches via 'scripts/worktree.ps1 finish <branch> main'."
+            )
 
     print("\n[COMPLETE] Synchronization & validation finished successfully.")
 

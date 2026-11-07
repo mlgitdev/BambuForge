@@ -69,10 +69,11 @@ Activate this workflow automatically whenever:
 python ".agents\skills\bambuforge-repo-sync\scripts\sync_to_bambuforge.py" --dry-run
 ```
 
-### Full Synchronization with Patch Version Bump
+### Full Synchronization with Patch Version Bump & Atomic Source Commit
 ```powershell
-python ".agents\skills\bambuforge-repo-sync\scripts\sync_to_bambuforge.py" --bump patch --commit-msg "feat(skills): sync self-learning and cad improvements"
+python ".agents\skills\bambuforge-repo-sync\scripts\sync_to_bambuforge.py" --bump patch --commit-source --commit-msg "feat(skills): sync self-learning and cad improvements"
 ```
+- **Dual-Repository Commit Rule:** Without `--commit-source`, `sync_to_bambuforge.py` commits only inside `../BambuForge` and prints a warning if `3D-Automation` still has uncommitted changes. Always pass `--commit-source` (or record a dedicated atomic local `git commit` in `3D-Automation` on `main`) so both the local workspace and `BambuForge` stay cleanly committed with zero leftover agent branches.
 
 ### Pull Request & Governance Rules
 - All changes submitted to `BambuForge` must target `main` via PR.

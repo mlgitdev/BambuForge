@@ -146,15 +146,17 @@ The repository root checkout on `main` is considered **clean and stable**. When 
 - Every worktree automatically inherits the root Python environment at `..\..\.venv\Scripts\python.exe` (build123d 0.13, OpenCascade 8.0, Trimesh, Matplotlib).
 - All CAD generators and slicing scripts must run using this shared interpreter.
 
-### 4. Merge-Back & Cleanup Lifecycle
-- Once a model or feature is generated, verified, and committed:
+### 4. Mandatory Atomic Local Commits & Zero Leftover Agent Branches
+- **Atomic Local Git Commit Per Task (Mandatory):** Every completed 3D model, CAD revision, slicer profile update, or skill refinement **MUST** be committed locally to `main` in the `3D-Automation` workspace using Conventional Commits (`feat(models): ...`, `fix(cad): ...`, `chore(skills): ...`) before concluding the task. *(Keep `3D-Automation` commits strictly local; never `git push origin` raw `3D-Automation` commits directly to the public `BambuForge` GitHub remote—only sanitized updates go upstream via `sync_to_bambuforge.py`.)*
+- **One-Command Merge-Back, Worktree Removal & Agent Branch Deletion:** Never leave temporary agent-created branches (`model/*`, `feat/*`, `fix/*`, `sub/*`, `docs/*`) or `.worktrees/*` folders dangling after task completion:
   ```powershell
   # Merge back into main
-  .\scripts\worktree.ps1 merge-back model/<descriptor> main
+  .\scripts\worktree.ps1 finish model/<descriptor> main
 
   # Safely remove the worktree
-  .\scripts\worktree.ps1 remove model/<descriptor>
+  .\scripts\worktree.ps1 remove model/<descriptor> -DeleteBranch
   ```
+- **User-Created Branch Protection:** Never leave agent-created branches behind, and **never delete branches explicitly created by the user** unless requested.
 - For full operational workflows, consult the [`worktree` skill](.agents/skills/worktree/SKILL.md).
 
 ---
@@ -369,6 +371,10 @@ Whenever the user requests a fine-tuning adjustment, reports a print fit issue, 
   - **Continuous 360° Slopes Around Circular Slider Guide Contour:** When a granular hopper feeds a quarter-circle rotary shutter (`R_blade`), preserve an unbroken circular slider housing guide contour (`R_guide = R_blade + 0.85 mm`) around the shutter arc and sweep **Front, Left, and Back** slopes continuously down to that guide contour (`Z_guide`) with zero vertical cut-off steps or protruding internal pivot chimneys.
   - **Sub-Slope Blind Pocket Ceiling (`0.0 g` Internal Support at `46°` Tilt):** Keep internal shutter pockets strictly beneath the sloped hopper floor (`>= 1.6 mm` solid roof web) with a slight downward `-2.0°` ceiling pitch toward the bed-tilted side and `4.5°` wall draft on opposing pocket walls so `100%` of internal surfaces exceed `45°` when tilted `46°` (`0.0 g` internal support).
   - **Untwisted Multi-Vertex Polygon Lofting:** Never pass arbitrary 2D `Polygon(*pts)` sketches through `BuildSketch` into `loft(ruled=True)`, as `BuildSketch` can re-index starting vertices between sections and twist the loft into vertical cliff cuts. Construct `Face(Wire.make_polygon([Vector(x, y, z) for ...]))` wires directly with identical vertex ordering and call `loft([f_bot, f_top], ruled=True)`.
+
+* **Atomic Local Git Commits & Zero Leftover Agent Branches Rule:**
+  - **Dual-Repo Commit Discipline:** Synchronizing to `BambuForge` commits only inside `../BambuForge`; the agent **MUST ALSO** record an atomic local `git commit` on `main` in the `3D-Automation` workspace after every completed task (or pass `--commit-source` to `sync_to_bambuforge.py`), while never pushing raw `3D-Automation` commits directly to public `origin`.
+  - **Clean Branch Table (`main` Only Unless User-Created):** Whenever an agent creates a temporary branch/worktree (`model/*`, `feat/*`, `fix/*`, `sub/*`, `docs/*`), it must merge into `main`, remove `.worktrees/<folder>`, and delete the temporary branch (`.\scripts\worktree.ps1 finish <branch> main`). Never leave agent-created branches behind, and never delete branches created by the user.
 
 ---
 
