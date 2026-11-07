@@ -32,6 +32,7 @@ Activate this workflow automatically whenever:
 |  Internal Workspace: 3D-Automation   |
 |  - AGENTS.md                          |
 |  - FILAMENTS.md                       |
+|  - SPEED_TUNING_GUIDE.md              |
 |  - profiles/                          |
 |  - .agents/skills/                    |
 |    - 3d-print-modeling/               |

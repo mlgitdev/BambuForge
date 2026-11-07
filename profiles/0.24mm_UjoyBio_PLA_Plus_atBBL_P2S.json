@@ -1,0 +1,68 @@
+{
+    "from": "User",
+    "inherits": "0.24mm Standard @BBL P2S",
+    "name": "0.24mm UjoyBio PLA Plus @BBL P2S",
+    "print_settings_id": "0.24mm UjoyBio PLA Plus @BBL P2S",
+    "layer_height": "0.24",
+    "initial_layer_print_height": "0.20",
+    "initial_layer_speed": [
+        "50",
+        "nil",
+        "nil"
+    ],
+    "initial_layer_infill_speed": [
+        "105",
+        "nil",
+        "nil"
+    ],
+    "outer_wall_speed": [
+        "110",
+        "nil",
+        "nil"
+    ],
+    "inner_wall_speed": [
+        "200",
+        "nil",
+        "nil"
+    ],
+    "sparse_infill_speed": [
+        "270",
+        "nil",
+        "nil"
+    ],
+    "internal_solid_infill_speed": [
+        "220",
+        "nil",
+        "nil"
+    ],
+    "top_surface_speed": [
+        "100",
+        "nil",
+        "nil"
+    ],
+    "outer_wall_acceleration": [
+        "3500",
+        "nil",
+        "nil"
+    ],
+    "default_acceleration": [
+        "8000",
+        "nil",
+        "nil"
+    ],
+    "top_shell_layers": [
+        "4"
+    ],
+    "bottom_shell_layers": [
+        "3"
+    ],
+    "travel_speed": [
+        "500",
+        "nil",
+        "nil"
+    ],
+    "compatible_printers": [
+        "Bambu Lab P2S 0.4 nozzle"
+    ],
+    "version": "2.6.0.5"
+}

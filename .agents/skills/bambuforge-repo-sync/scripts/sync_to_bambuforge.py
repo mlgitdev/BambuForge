@@ -51,6 +51,7 @@ FORBIDDEN_PATTERNS = [
 SYNC_ITEMS = [
     ("AGENTS.md", "AGENTS.md"),
     ("FILAMENTS.md", "FILAMENTS.md"),
+    ("SPEED_TUNING_GUIDE.md", "SPEED_TUNING_GUIDE.md"),
     ("profiles", "profiles"),
     (".agents/skills/3d-print-modeling", ".agents/skills/3d-print-modeling"),
     (".agents/skills/bambu-studio-ai", ".agents/skills/bambu-studio-ai"),

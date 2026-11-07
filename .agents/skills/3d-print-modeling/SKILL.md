@@ -62,6 +62,10 @@ Read [fdm-design-principles.md](./references/fdm-design-principles.md) and impor
    * Never call a helper function that opens its own `with BuildPart():` inside an active `with BuildPart():` block (this resets the outer builder context). Construct helper `Part` solids outside the `with BuildPart():` block and combine them using explicit boolean operators (`+` union, `-` cut, `&` intersect).
 10. **Multi-Color AMS Boolean Segmentation:**
    * Partition multi-color designs into non-overlapping `Part` solids using boolean intersection (`&`) and subtraction (`-`) against the master solid (e.g., 6 zones for Base Planters, 1 zone for Saucers, 4 zones for Risers), and export via `export_multicolor_multiplate_3mf()`.
+11. **Monolithic Blind Pocket Tilted Print Orientation (`45°–47°` Un-Engraved Side Tilt):**
+   * When a monolithic enclosure contains a wide, shallow internal pocket (such as a rotary shutter slot under a sloped hopper floor) whose `0°` roof would trap unremovable internal supports if printed flat, pre-orient the body tilted **`45°–47°` onto an un-engraved exterior wall** (with a `2.0 mm` bed-stabilization chamfer), flare internal pocket/slot roofs (`+5°..+17°`), and draft opposing inner walls (`5°`) so **100% of internal faces sit `> 45°` from horizontal** (`0.0 g` internal support). Configure `.3mf` project settings with `enable_support = 1`, `support_type = tree(auto)`, `support_on_build_plate_only = 1`, and `support_threshold_angle = 45` so tree supports touch **only** the plain exterior wall while keeping all branded/customizable faces vertical or skyward.
+12. **Enclosed Mechanism 3D Kinematic Insertion Trajectory Audit & Dual-Lock Snap Handle:**
+   * Split trapped internal sliders/shutters into a **slide-in internal member** (with a planar XY elastic C-jaw socket) + **snap-in keyed external handle** (pushed straight through the housing slot) + **coaxial locking pivot pin**. Run a continuous multi-step 3D B-Rep insertion trajectory check (`20+` 6-DOF poses from outside the housing to the seated position) asserting **`0.000000 mm³` boolean collision** at every step.
 
 ---
 

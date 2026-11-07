@@ -1,0 +1,49 @@
+{
+    "from": "User",
+    "inherits": "Generic PLA Silk @BBL P2S",
+    "name": "Kingroon Silk PLA 0.4",
+    "filament_settings_id": [
+        "Kingroon Silk PLA 0.4"
+    ],
+    "nozzle_temperature": [
+        "220",
+        "nil",
+        "nil"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "210",
+        "nil",
+        "nil"
+    ],
+    "textured_plate_temp": [
+        "55",
+        "nil",
+        "nil"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "60",
+        "nil",
+        "nil"
+    ],
+    "filament_flow_ratio": [
+        "0.97"
+    ],
+    "filament_max_volumetric_speed": [
+        "11.0",
+        "nil",
+        "nil"
+    ],
+    "fan_min_speed": [
+        "100"
+    ],
+    "fan_max_speed": [
+        "100"
+    ],
+    "close_fan_the_first_x_layers": [
+        "3"
+    ],
+    "compatible_printers": [
+        "Bambu Lab P2S 0.4 nozzle"
+    ],
+    "version": "2.6.0.5"
+}

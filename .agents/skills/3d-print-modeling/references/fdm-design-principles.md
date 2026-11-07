@@ -125,3 +125,19 @@ When designing enclosures, lids, covers, or multi-color flush inlays that print 
    - Standalone decorative STLs (e.g. `pegasus_horse_wings_only.stl`, standalone badges) meant for user placement in Bambu Studio must always be exported upright, sitting flat on their back at $Z = 0$ with the front detail facing $+Z$, reading normally from above (+Z).
 
   - **Flush Inlay & Engraving Depth Standard (`1.60 – 2.00 mm` / `8–10 Layers`):** Never make multi-color flush inlays, debossed recesses, or standalone decorative badges shallow (`0.60 mm` / 3 layers), as light filaments (Yellow, Gold, Orange, White) over dark shells (Black, Charcoal) suffer from optical color bleed-through and fragile geometry. Always design inlays, recesses, and standalone badges at **`1.60 – 2.00 mm` depth (`8–10 layers` at `0.20 mm`)** (e.g. `1.80 mm` on a `3.00 mm` lid leaving `1.20 mm` backing; `1.60 mm` on a `2.40 mm` floor leaving `0.80 mm` / 4 solid waterproof layers).
+
+---
+
+## 9. Monolithic Blind Pockets (`45°–47°` Tilt) & 3D Kinematic Insertion Audits
+
+1. **Eliminating Trapped Internal Supports via `45°–47°` Un-Engraved Wall Tilt:**
+   - A monolithic blind slot (`3–5 mm` high, `50–80 mm` wide) printed at `0°` creates an unbridgeable ceiling that slicers pack with unremovable support material.
+   - Instead of reverting to loose glued ramps, tilt the housing **`45°–47°` onto an un-engraved exterior wall** (adding a `2.0 mm` flat stabilization chamfer at `Z_print = 0.00 mm`), flare the internal pocket roof (`+5°..+17°`), and draft opposing vertical inner walls (`5°`) so every internal ceiling sits at **`>= 47°–54°` from horizontal**.
+   - Set `support_type = "tree(auto)"`, `support_on_build_plate_only = "1"`, and `support_threshold_angle = "45"` in `Metadata/project_settings.config`. Supports touch **only** the plain exterior bed-facing side; internal pockets receive `0.0 g` support, and branded/text walls face upward or vertical.
+
+2. **Decoupled Dual-Lock Snap Handle & 6-DOF Insertion Trajectory Verification:**
+   - Split enclosed rotary/sliding shutters into:
+     1. **Internal Slide-In Blade:** Inserts through the open hopper/top aperture (`0.000000 mm³` collision along a continuous 6-DOF keyframe path) and carries a planar XY elastic C-jaw female socket (`0.35 mm`/side jaw deflection).
+     2. **External Snap-In Handle:** Pushes straight through the exterior wall slot into the C-jaw socket with dual anti-rotation key flats (`Snap Lock #1`).
+     3. **Coaxial Flush Snap Pivot Pin:** Passes through both the housing bore and a coaxial eye inside the handle tang (`Positive Pin Lock #2`), physically preventing separation under load.
+

@@ -88,7 +88,9 @@ Whenever packing multiple trays/modules and multi-color AMS sub-parts into a sin
    * Prevents discrepancies between preview renders and slicer plate layouts:
      * **Explicit Plate Instancing:** Asserts every object in `3D/3dmodel.model` has a corresponding `<model_instance>` tag in `<plate>` inside `Metadata/model_settings.config` (prevents parts from disappearing in Bambu Studio).
      * **Collision & Clearance Verification:** Asserts $> 10\text{ mm}$ (typically $> 25\text{ mm}$) safety clearance between distinct plate items on the $256 \times 256\text{ mm}$ bed.
-     * **Bed Contact & Coordinate Integrity:** Asserts that bed-printed parts touch $Z = 0.00\text{ mm}$ and share the identical orientation as the interactive viewer components.
+     * **Bed Contact & Coordinate Integrity:** Asserts that bed-printed parts touch $Z = 0.00\text{ mm}$ and share the identical orientation as the interactive viewer components. Include `<metadata name="Application">BambuStudio-02.06.00.51</metadata>` in `3D/3dmodel.model` so CLI round-trips preserve custom `> 25 mm` plate spacing without triggering auto-arrange.
+9. **Tilted Exterior-Only Tree Support Packaging (`support_on_build_plate_only = 1`):**
+   * When a model with an enclosed internal pocket cannot bridge flat at `0°` without internal supports, pre-orient the mesh tilted `45°–47°` onto an **un-engraved exterior wall** so all internal cavity faces exceed `45°` from horizontal (`0.0 g` internal support). Persist `"enable_support": "1"`, `"support_type": "tree(auto)"`, `"support_on_build_plate_only": "1"`, and `"support_threshold_angle": "45"` inside `Metadata/project_settings.config` (and `<metadata key="enable_support" value="0"/>` on flat companion parts) after the `bambu-studio.exe --export-3mf` CLI round-trip.
 
 ---
 
