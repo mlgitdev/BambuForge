@@ -141,3 +141,8 @@ When designing enclosures, lids, covers, or multi-color flush inlays that print 
      2. **External Snap-In Handle:** Pushes straight through the exterior wall slot into the C-jaw socket with dual anti-rotation key flats (`Snap Lock #1`).
      3. **Coaxial Flush Snap Pivot Pin:** Passes through both the housing bore and a coaxial eye inside the handle tang (`Positive Pin Lock #2`), physically preventing separation under load.
 
+3. **360° Contour-Guided Hopper Slopes & Untwisted Explicit Wire Lofts:**
+   - Surround quarter-circle rotary shutters (`R_blade`) with a continuous circular slider guide contour (`R_guide = R_blade + 0.85 mm` clearance) and sweep Front, Left, and Back funnel slopes all the way down to `R_guide` without vertical cut-offs or protruding internal pivot bosses (snap the coaxial pivot pin inside an internal counterbore in the handle tang instead).
+   - Keep the blind shutter pocket roof beneath the funnel floor (`-2.0°` slope toward the tilted bed side + `4.5°` wall draft on opposing pocket walls) so `46°` tilted printing yields `0.0 g` internal support.
+   - Build multi-vertex ruled lofts directly via `Face(Wire.make_polygon([Vector(x, y, z) for ...]))` and `loft([f_bot, f_top], ruled=True)` to prevent `BuildSketch` vertex re-indexing twists.
+

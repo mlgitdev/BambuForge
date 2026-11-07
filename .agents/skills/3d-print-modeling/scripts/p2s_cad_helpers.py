@@ -514,17 +514,37 @@ def generate_interactive_html_viewer(
     return viewer_path
 
 
-def _flatten_bambu_json(path: Path) -> dict:
-    d = json.loads(path.read_text(encoding="utf-8"))
-    if "inherits" in d and d["inherits"]:
-        parent_p = path.parent / f"{d['inherits']}.json"
-        if parent_p.exists():
-            p = _flatten_bambu_json(parent_p)
-            p.update(d)
-            d = p
-    d.pop("inherits", None)
-    d.pop("include", None)
-    return d
+def _flatten_bambu_json(path: Path, bbl_category_dir: Path | None = None) -> dict:
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    merged: dict = {}
+
+    def _find_json(ref_name: str) -> Path | None:
+        cand = path.parent / f"{ref_name}.json"
+        if cand.exists():
+            return cand
+        if bbl_category_dir is not None:
+            cand2 = bbl_category_dir / f"{ref_name}.json"
+            if cand2.exists():
+                return cand2
+        return None
+
+    parent_name = raw.get("inherits")
+    if parent_name:
+        parent_p = _find_json(parent_name)
+        if parent_p is not None:
+            merged.update(_flatten_bambu_json(parent_p, bbl_category_dir=bbl_category_dir))
+
+    inc_list = raw.get("include")
+    if isinstance(inc_list, list):
+        for inc_name in inc_list:
+            inc_p = _find_json(inc_name)
+            if inc_p is not None:
+                merged.update(_flatten_bambu_json(inc_p, bbl_category_dir=bbl_category_dir))
+
+    merged.update(raw)
+    merged.pop("inherits", None)
+    merged.pop("include", None)
+    return merged
 
 
 def _mesh_to_3mf_object_xml(obj_id: int, mesh: trimesh.Trimesh) -> str:
@@ -684,7 +704,7 @@ def _get_part_slicing_overrides_xml(z_name: str) -> str:
         return (
             '      <metadata key="wall_loops" value="3"/>\n'
             '      <metadata key="sparse_infill_density" value="100%"/>\n'
-            '      <metadata key="sparse_infill_pattern" value="rectilinear"/>\n'
+            '      <metadata key="sparse_infill_pattern" value="gyroid"/>\n'
         )
     if "corner" in zn or "rod" in zn:
         # 4 Corner trellis columns & riser corner columns: 4 walls + 40% Gyroid infill
@@ -803,7 +823,7 @@ def _inject_multicolor_assemblies_into_3mf(
                     f'      <metadata key="name" value="{mod_name}"/>\n'
                     f'      <metadata key="wall_loops" value="4"/>\n'
                     f'      <metadata key="sparse_infill_density" value="100%"/>\n'
-                    f'      <metadata key="sparse_infill_pattern" value="rectilinear"/>\n'
+                    f'      <metadata key="sparse_infill_pattern" value="gyroid"/>\n'
                     f'      <metadata key="matrix" value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/>\n'
                     f'      <mesh_stat face_count="12" edges_fixed="0" degenerate_facets="0" facets_removed="0" facets_reversed="0" backwards_edges="0"/>\n'
                     f'    </part>'
