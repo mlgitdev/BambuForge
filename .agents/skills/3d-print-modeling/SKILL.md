@@ -93,11 +93,28 @@ When the user provides raster graphics (PNG, JPG, BMP) in `imports/` or requests
 ---
 
 
-### Face-Down Bed Printing & Logo Chirality Rule (The Roll-Over Invariant)
-When printing lids, faceplates, or covers face-down on the textured PEI plate (`Z = 0`) with flush multi-color inlays or debossed text:
-- **Rigid-Body Transformation Match:** If the lid is modeled upright and flipped 180° to face the bed, the logo/artwork MUST undergo the exact same 180° rotation around the exact same axis and center. Never negate a single coordinate axis ($X \to -X$) which creates an improper mirror reflection ($\\det(R) = -1$).
-- **The Slicer Through-the-Cavity Rule:** Looking down from $+Z$ in Bambu Studio reveals the inside cavity of a face-down lid; looking through the back naturally looks reversed. Never mirror the logo to look readable through the back!
-- **Bottom-View Verification Invariant:** Verify exterior text by looking from **$-Z$ looking UP at the build plate**—text must read left-to-right and emblems must face forward on the bed contact layer.
+### Universal FDM Text & Inlay Orientation Law (Face-Down Bed Contact vs Face-Up Upright Surfaces)
+When designing enclosures, lids, covers, or multi-color flush inlays:
+- **Case A: Face-Down Bed Contact ($Z = 0.00\text{ mm}$):**
+  * When a lid or panel is printed face-down flat on the textured PEI plate ($Z = 0$) for zero supports and a textured exterior finish, the surface contacting the bed **is the exterior face of the finished part**.
+  * Looking at this exterior face (from underneath the bed via bottom camera $-Z$ looking up, or when holding the finished print) inverts the horizontal screen projection: $\text{screen}_x = -X_{\text{cad}}$.
+  * **Mandatory Bed Mirror Rule ($X \to -X$):** In CAD, any 2D text, logo, or multi-color inlay placed on a $Z = 0$ face-down surface **MUST be mirrored across the X axis ($X_{\text{cad}} \to -X_{\text{cad}}$)**.
+  * When mirrored in CAD, the finished exterior face yields $\text{screen}_x = -(-X_{\text{svg}}) = +X_{\text{svg}}$ (100% un-mirrored):
+    - English/Latin text reads naturally **Left-to-Right**.
+    - Hebrew/Arabic script reads naturally **Right-to-Left**.
+    - Emblems, stars, and symbols are un-mirrored.
+  * Both the body cutout cavity and the positive inlay mesh MUST use the identical mirrored transform so they mate with $0.0000\text{ mm}$ zero drift.
+
+- **Case B: Face-Up Upright Surfaces ($Z > 0.00\text{ mm}$):**
+  * When a part is printed upright (e.g. bottom basin floor, top surface of an upright container, standalone badge on its flat back), the exterior face faces skyward ($+Z$).
+  * Viewed directly from above ($+Z$), $\text{screen}_x = +X_{\text{cad}}$.
+  * **No Mirroring ($X \to +X$):** In CAD, text and inlays on an upright face MUST NOT be mirrored.
+
+- **Language Independence Invariant:**
+  * Script direction is already encoded in SVG vector coordinates and font metrics.
+  * Face-down on bed ALWAYS requires CAD $X \to -X$ so that BOTH English and Hebrew read correctly on the finished exterior face. Face-up NEVER requires CAD $X \to -X$.
+  * Tested and verified in [`tests/test-text-inlay-orientation/`](../../../tests/test-text-inlay-orientation/README.md).
+
 - **Standalone Artwork Badges:** Standalone decorative emblems/badges must be exported upright on their flat back at $Z = 0$ facing $+Z$ so the user can import, scale, and position them freely in Bambu Studio.
 
 ## 4. Modifying Imported Third-Party `.3mf` / `.stl` Models (`imports/` Workflow)

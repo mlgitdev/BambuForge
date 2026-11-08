@@ -266,12 +266,29 @@ Whenever the user requests a fine-tuning adjustment, reports a print fit issue, 
 ---
 
 
-* **Face-Down Bed Printing & Inlay/Logo Chirality Principle (The Roll-Over Rule):**
-  - **The Roll-Over Invariant:** When an enclosure top lid is oriented face-down on the textured PEI plate (`Z = 0`) for support-free flush multi-color inlay printing, the lid has undergone a 180° physical roll-over around the X or Y axis. Any 2D logo, text engraving, or multi-color inlay applied to that exterior face MUST undergo the **EXACT SAME rigid-body rotation** as the lid.
-  - **Never Negate a Single Axis:** Inverting $X \to -X$ or $Y \to -Y$ creates an improper mirror reflection ($\\det(R) = -1$) rather than a physical 3D roll-over ($\\det(R) = +1$), reversing text direction and logo chirality.
-  - **The Slicer Through-the-Back Illusion:** In Bambu Studio, looking from `+Z` looks down into the inside cavity of the lid; looking through the back of an un-mirrored part naturally looks reversed. Never mirror the logo to look readable from `+Z`, which guarantees it prints backwards on the bed!
-  - **The Bottom Camera Invariant:** The definitive verification is to view the model from **`-Z` looking UP at the build plate**. In this view, exterior text MUST read left-to-right and emblems must face their intended directions.
-  - **Standalone Artwork STLs:** Standalone badges and logos must be exported upright on their flat back at $Z = 0$ facing $+Z$ so the user can import, scale, and position them anywhere in Bambu Studio.
+* **Universal FDM Text & Inlay Orientation Law (Face-Down Bed Contact vs Face-Up Upright Surfaces):**
+  - **Case A: Face-Down Bed Contact ($Z = 0.00\text{ mm}$):**
+    * When printing lids, covers, or panels face-down directly on the build plate (textured PEI plate at $Z = 0$) for zero supports and a premium finish, the surface contacting the bed **is the exterior face of the finished part**.
+    * Looking at this exterior face (from underneath the bed in Bambu Studio via bottom camera $-Z$ looking up, or when picking up the finished print) mathematically inverts the horizontal screen projection: $\text{screen}_x = -X_{\text{cad}}$.
+    * **Mandatory Bed Mirror Rule ($X \to -X$):** In CAD, any 2D text, logo, or multi-color inlay placed on a $Z = 0$ face-down surface **MUST be mirrored across the X axis ($X_{\text{cad}} \to -X_{\text{cad}}$)**.
+    * When mirrored in CAD, the finished exterior face yields $\text{screen}_x = -(-X_{\text{svg}}) = +X_{\text{svg}}$:
+      - Latin/English text reads naturally **Left-to-Right**.
+      - Hebrew/Arabic script reads naturally **Right-to-Left** (e.g. *איגרוף תאילנדי* / *קפה*).
+      - Emblems and symbols (Star of David, crests, logos) are **100% un-mirrored**.
+    * **Both Body Cavity and Inlay Share Exact Transform:** The negative cavity in the lid shell and the positive multi-material inlay mesh MUST use the identical mirrored transform so they mate with $0.0000\text{ mm}$ zero drift.
+
+  - **Case B: Face-Up Upright Surfaces ($Z > 0.00\text{ mm}$):**
+    * When printing upright parts (e.g. bottom basin floor, top surface of an upright container, standalone badge on its flat back), the exterior face faces skyward ($+Z$).
+    * The user views the part directly from above ($+Z$): $\text{screen}_x = +X_{\text{cad}}$.
+    * **No Mirroring ($X \to +X$):** In CAD, text and inlays on an upright face MUST NOT be mirrored ($X_{\text{cad}} \to +X_{\text{cad}}$).
+
+  - **Language Independence Invariant:**
+    * Script direction (English L-to-R vs Hebrew R-to-L) is already encoded in SVG vector coordinates and font metrics.
+    * **The rule does NOT change between languages:** Face-down on bed ALWAYS requires CAD $X \to -X$ so that BOTH English and Hebrew read correctly on the finished exterior face. Face-up NEVER requires CAD $X \to -X$.
+    * Tested and verified in [`tests/test-text-inlay-orientation/`](tests/test-text-inlay-orientation/README.md).
+
+  - **Standalone Artwork STLs:** Standalone badges, collectible medallions, and logos must be exported upright on their flat back at $Z = 0$ facing $+Z$ so the user can import, scale, and reposition them freely in Bambu Studio.
+
 * **Calibrated Snap Hinge Pin Dimensions (Ø3.00mm Knuckles):**
   - Pin shaft diameter: **Ø2.75 mm** (total clearance $0.25\text{ mm}$ / $0.125\text{ mm}$ per side in Ø3.00mm knuckle), delivering a snug, smooth sliding fit without wobble or relaxed slack.
   - Split snap barb: **Ø3.05 mm** with $0.75\text{ mm}$ flex slot, compressing easily through Ø3.00mm knuckle.

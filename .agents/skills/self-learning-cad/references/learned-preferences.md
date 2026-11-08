@@ -54,13 +54,28 @@
   - **Wide Landing Collar Stop ($14.0\text{ mm}$):** Provide a wide ($14.0\text{ mm}$) horizontal landing collar stop at the floor insertion line ($Y = 16.0\text{ mm}$) so the straw rests firmly on the planter floor with zero wobble, and add a $1.5\text{ mm}$ $45^\circ$ self-centering lead-in tip chamfer for smooth slide-in fit.
   - **Provide Standalone Single-Straw STL:** Alongside the 2-straw multi-plate tray (`tray4_irrigation_straws_2color.stl`), always export a standalone single-straw STL (`tray4_irrigation_straw_single.stl`) for convenient single replacement printing.
 
-* **Face-Down Bed Inlay & Logo Chirality Rule (The Roll-Over Invariant):**
-  - When an enclosure top lid is printed face-down on the PEI bed (`Z = 0`), the lid has been rolled over $180^\circ$ from its upright CAD orientation.
-  - The logo, text, or inlay MUST undergo the exact same rigid-body $180^\circ$ rotation as the lid.
-  - Never invert/negate X independently; negating X creates a mirror reflection rather than a physical roll-over.
-  - In slicer 3D view from `+Z`, the user sees the inside cavity; looking through the back of an un-mirrored part naturally appears reversed. Never "fix" the `+Z` view by flipping the logo, which makes it print backwards on the plate!
-  - Always verify from the **Bottom View (`-Z` looking UP at the build plate)**: text must read left-to-right.
-  - Standalone artwork STLs (`pegasus_horse_wings_only.stl`, badges) must be exported upright on their flat back at `Z = 0` facing `+Z`.
+* **Universal FDM Text & Inlay Orientation Law (Face-Down Bed Contact vs Face-Up Upright Surfaces):**
+  - **Case A: Face-Down Bed Contact ($Z = 0.00\text{ mm}$):**
+    * When printing lids, covers, or panels face-down directly on the build plate (textured PEI plate at $Z = 0$) for zero supports and a premium finish, the surface contacting the bed **is the exterior face of the finished part**.
+    * Looking at this exterior face (from underneath the bed in Bambu Studio via bottom camera $-Z$ looking up, or when picking up the finished print) mathematically inverts the horizontal screen projection: $\text{screen}_x = -X_{\text{cad}}$.
+    * **Mandatory Bed Mirror Rule ($X \to -X$):** In CAD, any 2D text, logo, or multi-color inlay placed on a $Z = 0$ face-down surface **MUST be mirrored across the X axis ($X_{\text{cad}} \to -X_{\text{cad}}$)**.
+    * When mirrored in CAD, the finished exterior face yields $\text{screen}_x = -(-X_{\text{svg}}) = +X_{\text{svg}}$:
+      - Latin/English text reads naturally **Left-to-Right**.
+      - Hebrew/Arabic script reads naturally **Right-to-Left** (e.g. *איגרוף תאילנדי* / *קפה*).
+      - Emblems and symbols (Star of David, crests, logos) are **100% un-mirrored**.
+    * Both the negative cavity in the lid shell and the positive multi-material inlay mesh MUST use the identical mirrored transform so they mate with $0.0000\text{ mm}$ zero drift.
+
+  - **Case B: Face-Up Upright Surfaces ($Z > 0.00\text{ mm}$):**
+    * When printing upright parts (e.g. bottom basin floor, top surface of an upright container, standalone badge on its flat back), the exterior face faces skyward ($+Z$).
+    * The user views the part directly from above ($+Z$): $\text{screen}_x = +X_{\text{cad}}$.
+    * **No Mirroring ($X \to +X$):** In CAD, text and inlays on an upright face MUST NOT be mirrored ($X_{\text{cad}} \to +X_{\text{cad}}$).
+
+  - **Language Independence Invariant:**
+    * Script direction (English L-to-R vs Hebrew R-to-L) is already encoded in SVG vector coordinates and font metrics.
+    * **The rule does NOT change between languages:** Face-down on bed ALWAYS requires CAD $X \to -X$ so that BOTH English and Hebrew read correctly on the finished exterior face. Face-up NEVER requires CAD $X \to -X$.
+    * Tested and verified in [`tests/test-text-inlay-orientation/`](../../../tests/test-text-inlay-orientation/README.md).
+
+  - **Standalone Artwork STLs:** Standalone badges, collectible medallions, and logos must be exported upright on their flat back at $Z = 0$ facing $+Z$ so the user can import, scale, and reposition them freely in Bambu Studio.
 * **Calibrated Snap Pin Dimensions for Ø3.00mm Knuckles:**
   - Pin shaft diameter: **Ø2.75 mm** (total clearance $0.25\text{ mm}$ / $0.125\text{ mm}$ per side in Ø3.00mm knuckle), providing a snug, smooth sliding fit without wobble or relaxed slack.
   - Split cantilever snap barb: **Ø3.05 mm** with $0.75\text{ mm}$ flex slot, $1.50\text{ mm}$ conical lead-in ramp, compressing effortlessly through Ø3.00mm hole.
@@ -122,3 +137,8 @@
 | `2026-11-07` | `workflow_organization` | `melitta-coffee-bean-dispenser` | Bambu Studio 2.6 rejected sparse_infill_pattern=rectilinear with a warning popup, showed a Customized Preset G-code security popup when machine include gcode templates were omitted, renamed dropdown presets to (filename), and rejected dangling 3D/_rels/ entries on Stage-2 CLI round-trips. | Always use gyroid for sparse_infill_pattern; recursively resolve both inherits and include JSON templates in _flatten_bambu_json() before CLI 3MF generation with native Bambu Lab P2S 0.4 nozzle (Textured PEI Plate), Bambu PLA Basic @BBL P2S, and installed user fine-print presets (e.g. 0.16mm Precision @BBL P2S - Ujoy PLA+) so different_settings_to_system[1..2] stay empty; and strip 3D/_rels/ alongside 3D/Objects/ before Stage-2 CLI round-trips. |
 | `2026-11-07` | `support_free_geometry` | `melitta-coffee-bean-dispenser` | Hopper slopes had vertical cut-off steps on Front and Left walls, lacked Back slope coverage around the circular slider housing guide contour, and BuildSketch Polygon ruled lofts could twist vertex order. | Preserve an unbroken circular slider guide contour (R_guide = R_blade + 0.85 mm clearance) around rotary quarter-circle shutters, sweep Front, Left, and Back slopes continuously down to R_guide with zero cut-off cliffs, keep blind shutter pockets beneath the slope floor (-2 deg ceiling pitch + 4.5 deg wall draft for 0.0 g internal support at 46 deg tilt), verify 0.000000 mm3 collision across multi-angle rotation and 3D insertion paths, and build multi-vertex lofts directly from explicit Face(Wire.make_polygon(...)) wires. |
 | `2026-11-07` | `workflow_organization` | `workspace` | sync_to_bambuforge.py only committed inside ../BambuForge while 3D-Automation lacked a mandatory local commit rule, and worktree.ps1 remove did not delete temporary agent branches. | Always record an atomic local git commit on main in 3D-Automation after every completed task (or pass --commit-source to sync_to_bambuforge.py; never push un-sanitized 3D-Automation commits to public origin), and always finish temporary worktrees via 'scripts/worktree.ps1 finish <branch> main' so no agent-created branches remain behind (never delete user-created branches). |
+
+### Universal FDM Text & Inlay Orientation Law (Face-Down Bed Contact vs Face-Up Upright Surfaces)
+- **Face-Down ($Z = 0$):** In CAD, always mirror across X ($X_{\text{cad}} \to -X_{\text{cad}}$). Looking from underneath the bed in Bambu Studio ($-Z$) and on the finished print, $\text{screen}_x = -(-X) = +X$, ensuring Latin text reads L-to-R, Hebrew reads R-to-L, and logos/stars face their true direction.
+- **Face-Up ($Z > 0$):** In CAD, never mirror ($X_{\text{cad}} \to +X_{\text{cad}}$).
+- **Language Invariant:** Applies equally to English, Hebrew, and all scripts. Script reading direction is handled by the font/SVG, while the $X \to -X$ mirror compensates exclusively for the face-down bed contact optical flip.

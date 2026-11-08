@@ -97,37 +97,43 @@ Raster images (PNG logos, silhouettes, scans) can be imported into CAD scripts u
 
 ---
 
-## 8. Face-Down Printing & Inlay/Logo Chirality Principle (The Roll-Over Rule)
+## 8. Universal FDM Text & Inlay Orientation Law (Face-Down Bed Contact vs Face-Up Upright Surfaces)
 
-When designing enclosures, lids, covers, or multi-color flush inlays that print **face-down on the build plate (`Z = 0`)** (such as on a textured PEI sheet for zero supports and a premium surface finish):
+When designing enclosures, lids, covers, or multi-color flush inlays that print **face-down on the build plate (`Z = 0`)** (such as on a textured PEI sheet for zero supports and a premium surface finish) versus **upright face-up surfaces (`Z > 0`)**:
 
 ### The Fundamental Physics & Spatial Mechanics:
-1. **The Rigid-Body Roll-Over Invariant (Part & Logo Share 100% of Transforms):**
-   - In CAD, an object is modeled right-side up in its functional assembled orientation (exterior face normal $\vec{n} = +Z$).
-   - When preparing the part for 3D printing face-down at $Z = 0$, the part is **rolled over** (rotated $180^\circ$ around the X or Y axis).
-   - Any 2D artwork (logo, text, emblem) applied to that exterior face MUST undergo the **EXACT SAME rigid-body rotation** as the part ($\\det(R) = +1$).
-   - **NEVER negate a single axis ($X \to -X$ or $Y \to -Y$) independently.** Negating one axis creates an improper reflection (mirroring, $\\det(R) = -1$) rather than a physical 3D rotation, corrupting text direction and emblem chirality.
 
-2. **The "Slicer Looking-Through-The-Back" Optical Illusion:**
-   - In Bambu Studio or any slicer, the default 3D camera looks from $+Z$ downwards toward the bed plate.
-   - When a lid is lying face-down on the bed at $Z = 0$, looking down from $+Z$ means looking at the **INSIDE CAVITY** (the back of the lid) towards the bed.
-   - Looking through the rear of a face-down part at the bed-facing artwork naturally appears reversed/mirrored from $+Z$—exactly like looking at text on a storefront glass window from inside the shop!
-   - An AI agent must **NEVER** "fix" this view by mirroring the text to look readable from $+Z$, because doing so guarantees that the 3D printer will lay down reversed text on the PEI plate, producing a backwards print.
+1. **Case A: Face-Down Bed Contact ($Z = 0.00\text{ mm}$):**
+   - **Physical Reality:** When a part is printed face-down on the build plate (e.g. top lid, faceplate, cover), the surface contacting the bed **is the exterior face of the finished part**.
+   - **Viewing Direction:** When inspecting the first layer in Bambu Studio (bottom camera looking up from $-Z$) or when picking up the finished part after removing it from the bed, the horizontal view axis is inverted:
+     $$\text{screen}_x = -X_{\text{cad}}$$
+   - **Mandatory Bed Mirror Rule ($X_{\text{cad}} \to -X_{\text{cad}}$):**
+     * When applying a 2D sketch, SVG, or font text directly onto a $Z = 0$ face-down surface in CAD, **$X_{\text{cad}}$ MUST be mirrored ($X_{\text{cad}} = -X_{\text{unmirrored}}$)**.
+     * *(Equivalently, if the part was originally modeled face-up at $+Z$ and then rolled over $180^\circ$ around the Y-axis into $Z = 0$, the physical 3D rotation automatically transforms $(x, y, z) \to (-x, y, -z)$, inverting X).*
+   - **The Result on the Exterior Face (Screen & Print):**
+     $$\text{screen}_x = -(-X_{\text{unmirrored}}) = +X_{\text{unmirrored}}$$
+     - English / Latin text reads naturally **Left-to-Right** (`COFFEE`, `PEGASUS`).
+     - Hebrew / Arabic script reads naturally **Right-to-Left** (*איגרוף תאילנדי*, *קפה*).
+     - Emblems and symbols (Star of David, crests, logos) are **100% un-mirrored**.
+   - **Shared Transform Invariant:** The negative body cavity and the positive multi-material inlay mesh MUST use the identical mirrored transform so they mate with $0.0000\text{ mm}$ zero drift.
 
-3. **The Bottom-Camera Verification Invariant (Bed Contact View):**
-   - The definitive mathematical proof that a face-down print is oriented correctly is to inspect the model with a virtual camera positioned at **$-Z$ looking UP (+Z) directly at the build plate** (or viewing the isolated 2D contact layer at $Z = 0$ from the outside).
-   - In this Bottom View (looking at the face that touches the PEI plate):
-     - Text MUST read normally from Left to Right.
-     - Directional emblems (e.g. crest, shield, stallion) MUST face their intended directions.
-     - Features must align with their mating geometry (e.g. hinge at $+Y$, latch at $-Y$).
+2. **Case B: Face-Up Upright Surfaces ($Z > 0.00\text{ mm}$):**
+   - **Physical Reality:** When a part is printed upright (e.g. bottom basin floor, top surface of an upright container, standalone badge on its flat back), the exterior face faces skyward ($+Z$).
+   - **Viewing Direction:** Viewed directly from above ($+Z$), $\text{screen}_x = +X_{\text{cad}}$.
+   - **No Mirroring ($X_{\text{cad}} \to +X_{\text{cad}}$):** In CAD, text and inlays on an upright face MUST NOT be mirrored.
+
+3. **Language Independence Invariant (English vs Hebrew):**
+   - Script direction (English L-to-R vs Hebrew R-to-L) is already encoded in SVG vector coordinates and font metrics.
+   - **The rule does NOT change between languages:** Face-down on bed ALWAYS requires CAD $X \to -X$ so that BOTH English and Hebrew read correctly on the finished exterior face. Face-up NEVER requires CAD $X \to -X$.
+   - Tested and verified in [`tests/test-text-inlay-orientation/`](../../../tests/test-text-inlay-orientation/README.md).
 
 4. **Standalone Artwork STLs Must Be Upright & Non-Mirrored:**
    - Standalone decorative STLs (e.g. `pegasus_horse_wings_only.stl`, standalone badges) meant for user placement in Bambu Studio must always be exported upright, sitting flat on their back at $Z = 0$ with the front detail facing $+Z$, reading normally from above (+Z).
 
-  - **Flush Inlay & Engraving Depth Standard (`1.60 – 2.00 mm` / `8–10 Layers`):** Never make multi-color flush inlays, debossed recesses, or standalone decorative badges shallow (`0.60 mm` / 3 layers), as light filaments (Yellow, Gold, Orange, White) over dark shells (Black, Charcoal) suffer from optical color bleed-through and fragile geometry. Always design inlays, recesses, and standalone badges at **`1.60 – 2.00 mm` depth (`8–10 layers` at `0.20 mm`)** (e.g. `1.80 mm` on a `3.00 mm` lid leaving `1.20 mm` backing; `1.60 mm` on a `2.40 mm` floor leaving `0.80 mm` / 4 solid waterproof layers).
+5. **Flush Inlay & Engraving Depth Standard (`1.60 – 2.00 mm` / `8–10 Layers`):**
+   - Never make multi-color flush inlays, debossed recesses, or standalone decorative badges shallow (`0.60 mm` / 3 layers), as light filaments (Yellow, Gold, Orange, White) over dark shells (Black, Charcoal) suffer from optical color bleed-through and fragile geometry. Always design inlays, recesses, and standalone badges at **`1.60 – 2.00 mm` depth (`8–10 layers` at `0.20 mm`)** (e.g. `1.80 mm` on a `3.00 mm` lid leaving `1.20 mm` backing; `1.60 mm` on a `2.40 mm` floor leaving `0.80 mm` / 4 solid waterproof layers).
 
 ---
-
 ## 9. Monolithic Blind Pockets (`45°–47°` Tilt) & 3D Kinematic Insertion Audits
 
 1. **Eliminating Trapped Internal Supports via `45°–47°` Un-Engraved Wall Tilt:**
