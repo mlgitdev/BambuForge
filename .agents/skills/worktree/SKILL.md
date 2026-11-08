@@ -28,7 +28,7 @@ flowchart TD
         SharedVenv[".venv/ (Shared Python 3.11 with build123d & trimesh)"]
         WorktreesFolder[".worktrees/ (Git-ignored)"]
         
-        WT1[".worktrees/model-pegasus-mouthguard<br/>(Agent A: Active Model Design)"]
+        WT1[".worktrees/model-travel-enclosure<br/>(Agent A: Active Model Design)"]
         WT2[".worktrees/feat-arch-straw-v2<br/>(Agent B: Parallel CAD Feature)"]
         
         WorktreesFolder --> WT1
@@ -113,10 +113,10 @@ Always use standardized prefixes to maintain clarity across concurrent agent ses
 
 | Type | Prefix | Example | Directory Name |
 | :--- | :--- | :--- | :--- |
-| **New 3D Model** | `model/<descriptor>` | `model/mouthguard-pegasus` | `.worktrees/model-mouthguard-pegasus/` |
+| **New 3D Model** | `model/<descriptor>` | `model/travel-enclosure` | `.worktrees/model-travel-enclosure/` |
 | **CAD Feature / Engine** | `feat/<descriptor>` | `feat/arch-straw-v2` | `.worktrees/feat-arch-straw-v2/` |
 | **Bug Fix / Tolerance** | `fix/<descriptor>` | `fix/rod-socket-gap` | `.worktrees/fix-rod-socket-gap/` |
-| **Sub-task / Experiment** | `sub/<parent>/<task>`| `sub/pegasus/hinge` | `.worktrees/sub-pegasus-hinge/` |
+| **Sub-task / Experiment** | `sub/<parent>/<task>`| `sub/enclosure/hinge` | `.worktrees/sub-enclosure-hinge/` |
 | **Documentation** | `docs/<descriptor>` | `docs/assembly-diagrams` | `.worktrees/docs-assembly-diagrams/` |
 
 ---

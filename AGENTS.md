@@ -266,26 +266,30 @@ Whenever the user requests a fine-tuning adjustment, reports a print fit issue, 
 ---
 
 
-* **Universal FDM Text & Inlay Orientation Law (Face-Down Bed Contact vs Face-Up Upright Surfaces):**
+* **Universal FDM Text & Inlay Orientation Law (Left-to-Right LTR vs Right-to-Left RTL Script Validation):**
   - **Case A: Face-Down Bed Contact ($Z = 0.00\text{ mm}$):**
-    * When printing lids, covers, or panels face-down directly on the build plate (textured PEI plate at $Z = 0$) for zero supports and a premium finish, the surface contacting the bed **is the exterior face of the finished part**.
-    * Looking at this exterior face (from underneath the bed in Bambu Studio via bottom camera $-Z$ looking up, or when picking up the finished print) mathematically inverts the horizontal screen projection: $\text{screen}_x = -X_{\text{cad}}$.
-    * **Mandatory Bed Mirror Rule ($X \to -X$):** In CAD, any 2D text, logo, or multi-color inlay placed on a $Z = 0$ face-down surface **MUST be mirrored across the X axis ($X_{\text{cad}} \to -X_{\text{cad}}$)**.
-    * When mirrored in CAD, the finished exterior face yields $\text{screen}_x = -(-X_{\text{svg}}) = +X_{\text{svg}}$:
-      - Latin/English text reads naturally **Left-to-Right**.
-      - Hebrew/Arabic script reads naturally **Right-to-Left** (e.g. *איגרוף תאילנדי* / *קפה*).
-      - Emblems and symbols (Star of David, crests, logos) are **100% un-mirrored**.
-    * **Both Body Cavity and Inlay Share Exact Transform:** The negative cavity in the lid shell and the positive multi-material inlay mesh MUST use the identical mirrored transform so they mate with $0.0000\text{ mm}$ zero drift.
+    * When printing lids, covers, or panels face-down directly on the build plate (textured PEI plate at $Z = 0$) for zero supports and a textured exterior finish, the surface contacting the bed **is the exterior face of the finished part**.
+    * Inspecting this exterior face (from underneath the bed in Bambu Studio via bottom camera $-Z$ looking up, or when holding the finished print after removing it from the plate) mathematically inverts the horizontal screen projection: $\text{screen}_x = -X_{\text{cad}}$.
+    * **Mandatory Bed Mirror Rule ($X \to -X$):** In CAD, any 2D text, typography, or multi-color inlay placed on a $Z = 0$ face-down surface **MUST be mirrored across the X axis ($X_{\text{cad}} \to -X_{\text{cad}}$)**.
+    * When mirrored in CAD, the physical bottom exterior face yields $\text{screen}_x = -(-X_{\text{svg}}) = +X_{\text{svg}}$:
+      - **Left-to-Right (LTR) Scripts:** Latin, Cyrillic, Greek (e.g. English `COFFEE`, `LABEL`) read naturally from **Left to Right**.
+      - **Right-to-Left (RTL) Scripts:** Semitic scripts like Hebrew and Arabic (e.g. Hebrew *קפה* / *שלום*, Arabic *سلام*) read naturally from **Right to Left** in their correct typographic progression.
+      - **Emblems & Graphics:** Asymmetrical icons, brand logos, and direction arrows are **100% un-mirrored**.
+    * **Identical Mating Transform:** The negative body cavity and the positive multi-material inlay mesh MUST use the identical mirrored transform so they mate with $0.0000\text{ mm}$ zero drift.
 
-  - **Case B: Face-Up Upright Surfaces ($Z > 0.00\text{ mm}$):**
-    * When printing upright parts (e.g. bottom basin floor, top surface of an upright container, standalone badge on its flat back), the exterior face faces skyward ($+Z$).
-    * The user views the part directly from above ($+Z$): $\text{screen}_x = +X_{\text{cad}}$.
-    * **No Mirroring ($X \to +X$):** In CAD, text and inlays on an upright face MUST NOT be mirrored ($X_{\text{cad}} \to +X_{\text{cad}}$).
+  - **Case B: Normal Face-Up Surfaces ($Z > 0.00\text{ mm}$):**
+    * When printing upright parts (e.g. container interior floor, top deck of an upright housing, standalone desk badge), the exterior face faces skyward ($+Z$).
+    * Viewed directly from above ($+Z$), $\text{screen}_x = +X_{\text{cad}}$.
+    * **No Mirroring ($X \to +X$):** In CAD, text and inlays on an upright face MUST NOT be mirrored. Both LTR and RTL scripts read naturally directly in CAD and slicer top views.
 
-  - **Language Independence Invariant:**
-    * Script direction (English L-to-R vs Hebrew R-to-L) is already encoded in SVG vector coordinates and font metrics.
-    * **The rule does NOT change between languages:** Face-down on bed ALWAYS requires CAD $X \to -X$ so that BOTH English and Hebrew read correctly on the finished exterior face. Face-up NEVER requires CAD $X \to -X$.
-    * Tested and verified in [`tests/test-text-inlay-orientation/`](tests/test-text-inlay-orientation/README.md).
+  - **Case C: Angled & Sloped Overhangs ($0^\circ < \theta < 90^\circ$, e.g. $45^\circ$):**
+    * When a branded or labeled face is sloped with a positive vertical normal component ($n_z > 0$), it faces upward and outward toward the viewer.
+    * **No Mirroring ($X \to +X$):** Like Face-Up surfaces, angled faces MUST NOT be mirrored ($X \to +X$). Slicer views looking perpendicular to the sloped face show un-mirrored LTR and RTL text.
+
+  - **Universal Language Independence Invariant:**
+    * Typographic reading direction (LTR vs RTL) is entirely handled by the font shaping engine (HarfBuzz, FreeType BiDi).
+    * **The CAD transformation is purely optical/spatial:** Face-down on bed ALWAYS requires CAD $X \to -X$ so that BOTH LTR and RTL scripts read correctly on the finished exterior face. Face-up and angled overhangs NEVER require CAD $X \to -X$.
+    * Slicer top view (+Z) of a face-down part will always look mirrored in CAD coordinates; this is the mathematical prerequisite for the bed contact layer to print correctly. Validated via the 3-plate test matrix.
 
   - **Standalone Artwork STLs:** Standalone badges, collectible medallions, and logos must be exported upright on their flat back at $Z = 0$ facing $+Z$ so the user can import, scale, and reposition them freely in Bambu Studio.
 

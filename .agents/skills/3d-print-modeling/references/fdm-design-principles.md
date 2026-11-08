@@ -97,38 +97,45 @@ Raster images (PNG logos, silhouettes, scans) can be imported into CAD scripts u
 
 ---
 
-## 8. Universal FDM Text & Inlay Orientation Law (Face-Down Bed Contact vs Face-Up Upright Surfaces)
+## 8. Universal FDM Text & Inlay Orientation Law (Left-to-Right LTR vs Right-to-Left RTL Validation)
 
-When designing enclosures, lids, covers, or multi-color flush inlays that print **face-down on the build plate (`Z = 0`)** (such as on a textured PEI sheet for zero supports and a premium surface finish) versus **upright face-up surfaces (`Z > 0`)**:
+When engineering enclosures, faceplates, signage, or flush multi-color inlays across different languages and print orientations:
 
-### The Fundamental Physics & Spatial Mechanics:
+### Typographic Reading Direction & Spatial Optics Mechanics:
 
-1. **Case A: Face-Down Bed Contact ($Z = 0.00\text{ mm}$):**
-   - **Physical Reality:** When a part is printed face-down on the build plate (e.g. top lid, faceplate, cover), the surface contacting the bed **is the exterior face of the finished part**.
-   - **Viewing Direction:** When inspecting the first layer in Bambu Studio (bottom camera looking up from $-Z$) or when picking up the finished part after removing it from the bed, the horizontal view axis is inverted:
+1. **Typographic Foundations (LTR vs. RTL Scripts):**
+   - **Left-to-Right (LTR) Languages:** Latin, Cyrillic, Greek (e.g. English `START`, `OPEN`, `BRAND`). Characters sequence from left ($X_{\min}$) to right ($X_{\max}$).
+   - **Right-to-Left (RTL) Languages:** Semitic scripts including Hebrew, Arabic, Persian, Urdu (e.g. Hebrew *קפה*, *שלום*, Arabic *سلام*). Characters sequence from right ($X_{\max}$) to left ($X_{\min}$).
+   - **Unicode BiDi Text Shaping:** Modern CAD text renderers (OpenSCAD HarfBuzz/FreeType, FreeCAD ShapeString) automatically position character glyphs in their correct typographic reading order.
+
+2. **Case A: Face-Down Bed Contact ($Z = 0.00\text{ mm}$):**
+   - **Physical Reality:** When a part prints face-down on the build plate (e.g. top lids, covers, debossed signs), the surface contacting the textured PEI sheet **is the exterior face of the finished part**.
+   - **Viewing Direction & Mathematical Inversion:** When inspecting the first layer in Bambu Studio (bottom camera looking up from $-Z$) or when inspecting the finished part after removing it from the build plate, the horizontal viewing axis is inverted:
      $$\text{screen}_x = -X_{\text{cad}}$$
    - **Mandatory Bed Mirror Rule ($X_{\text{cad}} \to -X_{\text{cad}}$):**
-     * When applying a 2D sketch, SVG, or font text directly onto a $Z = 0$ face-down surface in CAD, **$X_{\text{cad}}$ MUST be mirrored ($X_{\text{cad}} = -X_{\text{unmirrored}}$)**.
-     * *(Equivalently, if the part was originally modeled face-up at $+Z$ and then rolled over $180^\circ$ around the Y-axis into $Z = 0$, the physical 3D rotation automatically transforms $(x, y, z) \to (-x, y, -z)$, inverting X).*
-   - **The Result on the Exterior Face (Screen & Print):**
+     * Any 2D typography, logo, or multi-color inlay placed on a $Z = 0$ face-down surface in CAD **MUST be mirrored across the X axis ($X_{\text{cad}} = -X_{\text{unmirrored}}$)**.
+   - **Result on the Finished Exterior Surface:**
      $$\text{screen}_x = -(-X_{\text{unmirrored}}) = +X_{\text{unmirrored}}$$
-     - English / Latin text reads naturally **Left-to-Right** (`COFFEE`, `PEGASUS`).
-     - Hebrew / Arabic script reads naturally **Right-to-Left** (*איגרוף תאילנדי*, *קפה*).
-     - Emblems and symbols (Star of David, crests, logos) are **100% un-mirrored**.
-   - **Shared Transform Invariant:** The negative body cavity and the positive multi-material inlay mesh MUST use the identical mirrored transform so they mate with $0.0000\text{ mm}$ zero drift.
+     - **LTR Scripts:** Read naturally from **Left to Right** (`LABEL`, `COFFEE`).
+     - **RTL Scripts:** Read naturally from **Right to Left** (*שלום*, *קפה*) with correct character stroke direction.
+     - **Emblems & Graphics:** Asymmetrical icons, brand emblems, and direction arrows are **100% un-mirrored**.
+   - **Slicer Top-View Illusion:** In Bambu Studio, viewing a face-down part from $+Z$ looks through the back of the part into the cavity; seeing mirrored text (`2UƧAᎮƎꟼ` / `EƎꟻꟻOƆ`) from $+Z$ is the exact mathematical guarantee that the bed contact layer prints correctly!
+   - **Shared Mating Transform:** The negative body cavity and the positive multi-material inlay mesh MUST share the exact same mirrored transform to mate with $0.0000\text{ mm}$ zero drift.
 
-2. **Case B: Face-Up Upright Surfaces ($Z > 0.00\text{ mm}$):**
-   - **Physical Reality:** When a part is printed upright (e.g. bottom basin floor, top surface of an upright container, standalone badge on its flat back), the exterior face faces skyward ($+Z$).
+3. **Case B: Normal Face-Up Surfaces ($Z > 0.00\text{ mm}$):**
+   - **Physical Reality:** When a part prints upright (e.g. bottom basin floor, top surface of an upright container, desk nameplate), the exterior face points skyward ($+Z$).
    - **Viewing Direction:** Viewed directly from above ($+Z$), $\text{screen}_x = +X_{\text{cad}}$.
-   - **No Mirroring ($X_{\text{cad}} \to +X_{\text{cad}}$):** In CAD, text and inlays on an upright face MUST NOT be mirrored.
+   - **No Mirroring ($X_{\text{cad}} \to +X_{\text{cad}}$):** In CAD, text and inlays on an upright face MUST NOT be mirrored. Both LTR and RTL scripts read naturally directly in CAD and slicer top views.
 
-3. **Language Independence Invariant (English vs Hebrew):**
-   - Script direction (English L-to-R vs Hebrew R-to-L) is already encoded in SVG vector coordinates and font metrics.
-   - **The rule does NOT change between languages:** Face-down on bed ALWAYS requires CAD $X \to -X$ so that BOTH English and Hebrew read correctly on the finished exterior face. Face-up NEVER requires CAD $X \to -X$.
-   - Tested and verified in [`tests/test-text-inlay-orientation/`](../../../tests/test-text-inlay-orientation/README.md).
+4. **Case C: Angled & Sloped Overhangs ($0^\circ < \theta < 90^\circ$, e.g. $45^\circ$):**
+   - When a labeled face is sloped with a positive vertical normal component ($n_z > 0$), it faces upward and outward toward the viewer.
+   - **No Mirroring ($X_{\text{cad}} \to +X_{\text{cad}}$):** Like Face-Up surfaces, angled faces MUST NOT be mirrored ($X \to +X$). Slicer views looking perpendicular to the sloped face show un-mirrored LTR and RTL text.
 
-4. **Standalone Artwork STLs Must Be Upright & Non-Mirrored:**
-   - Standalone decorative STLs (e.g. `pegasus_horse_wings_only.stl`, standalone badges) meant for user placement in Bambu Studio must always be exported upright, sitting flat on their back at $Z = 0$ with the front detail facing $+Z$, reading normally from above (+Z).
+5. **Universal Language Independence Invariant:**
+   - The CAD transformation is purely optical and spatial: Face-down on bed ALWAYS requires CAD $X \to -X$ so that BOTH LTR and RTL scripts read correctly on the finished exterior face. Face-up and angled overhangs NEVER require CAD $X \to -X$.
+
+6. **Standalone Artwork STLs Must Be Upright & Non-Mirrored:**
+   - Standalone decorative STLs (e.g. `brand_logo_badge.stl`, collectible medallions) meant for custom user placement in Bambu Studio must always be exported upright, sitting flat on their back at $Z = 0$ with the front detail facing $+Z$, reading normally from above (+Z).
 
 5. **Flush Inlay & Engraving Depth Standard (`1.60 – 2.00 mm` / `8–10 Layers`):**
    - Never make multi-color flush inlays, debossed recesses, or standalone decorative badges shallow (`0.60 mm` / 3 layers), as light filaments (Yellow, Gold, Orange, White) over dark shells (Black, Charcoal) suffer from optical color bleed-through and fragile geometry. Always design inlays, recesses, and standalone badges at **`1.60 – 2.00 mm` depth (`8–10 layers` at `0.20 mm`)** (e.g. `1.80 mm` on a `3.00 mm` lid leaving `1.20 mm` backing; `1.60 mm` on a `2.40 mm` floor leaving `0.80 mm` / 4 solid waterproof layers).
