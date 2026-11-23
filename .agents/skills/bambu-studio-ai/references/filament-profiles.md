@@ -110,9 +110,9 @@ This profile tunes **UJOYBIO / EjoyBio Elite PLA+** for **ultra-fine miniature r
 ## 4. Installed Locations & Programmatic Usage
 
 1. **Live Bambu Studio User Directory (Installed & Ready in Slicer Dropdown):**
-   - `<USER_HOME>\AppData\Roaming\BambuStudio\user\944859351\process\0.20mm Precision @BBL P2S - Ujoy PLA+.json`
-   - `<USER_HOME>\AppData\Roaming\BambuStudio\user\944859351\process\0.16mm Precision @BBL P2S - Ujoy PLA+.json`
-   - `<USER_HOME>\AppData\Roaming\BambuStudio\user\944859351\process\0.24mm Standard @BBL P2S - Ujoy PLA+.json`
+   - `<USER_HOME>\AppData\Roaming\BambuStudio\user\<BAMBU_USER_ID>\process\0.20mm Precision @BBL P2S - Ujoy PLA+.json`
+   - `<USER_HOME>\AppData\Roaming\BambuStudio\user\<BAMBU_USER_ID>\process\0.16mm Precision @BBL P2S - Ujoy PLA+.json`
+   - `<USER_HOME>\AppData\Roaming\BambuStudio\user\<BAMBU_USER_ID>\process\0.24mm Standard @BBL P2S - Ujoy PLA+.json`
 2. **Workspace Profiles Resource Directory:**
    - `.agents/skills/bambu-studio-ai/resources/profiles/ujoybio_pla_plus_020mm_precision_project_settings.json`
    - `.agents/skills/bambu-studio-ai/resources/profiles/ujoybio_pla_plus_016mm_precision_project_settings.json`

@@ -7,7 +7,7 @@ Generates and installs calibrated filament and process profiles for Bambu Lab P2
 - 6 Process Presets (0.4mm nozzle): 0.08mm, 0.12mm, 0.16mm, 0.20mm, 0.24mm, 0.28mm Extra Draft.
 Outputs to:
   1. Local workspace `profiles/`
-  2. Bambu Studio user presets (`AppData/Roaming/BambuStudio/user/944859351/`)
+  2. Bambu Studio user presets (`AppData/Roaming/BambuStudio/user/<BAMBU_USER_ID>/`)
 """
 
 import json
@@ -17,7 +17,7 @@ from pathlib import Path
 
 WORKSPACE = Path(r"<WORKSPACE_ROOT>")
 PROFILES_DIR = WORKSPACE / "profiles"
-USER_PRESET_DIR = Path(r"<USER_HOME>\AppData\Roaming\BambuStudio\user\944859351")
+USER_PRESET_DIR = Path(r"<USER_HOME>\AppData\Roaming\BambuStudio\user\<BAMBU_USER_ID>")
 USER_FILAMENT_DIR = USER_PRESET_DIR / "filament"
 USER_PROCESS_DIR = USER_PRESET_DIR / "process"
 
@@ -28,7 +28,7 @@ USER_PROCESS_DIR.mkdir(parents=True, exist_ok=True)
 NOW = int(time.time())
 
 def make_info_file(path: Path, setting_id: str, base_id: str = ""):
-    content = f"sync_info = \nuser_id = 944859351\nsetting_id = {setting_id}\nbase_id = {base_id}\nupdated_time = {NOW}\n"
+    content = f"sync_info = \nuser_id = <BAMBU_USER_ID>\nsetting_id = {setting_id}\nbase_id = {base_id}\nupdated_time = {NOW}\n"
     path.write_text(content, encoding="utf-8")
 
 def gen_id(prefix: str, seed: str) -> str:
@@ -264,6 +264,68 @@ FILAMENTS = [
         "fan_max_speed": "100",
         "filament_type": "PLA",
         "description": "Kingroon High-Luster Silk PLA. Capped at 11 mm3/s to ensure rich reflective shine without milkiness."
+    },
+    {
+        "name": "Frucindra PETG 0.4",
+        "inherits": "Generic PETG @BBL P2S",
+        "base_id": "GFSG99_09",
+        "nozzle_temp": "242",
+        "nozzle_temp_init": "235",
+        "bed_temp": "75",
+        "bed_temp_init": "80",
+        "flow_ratio": "0.95",
+        "max_volumetric_speed": "13.0",
+        "fan_min_speed": "30",
+        "fan_max_speed": "60",
+        "filament_type": "PETG",
+        "drying_temp": "55",
+        "drying_time": "5",
+        "extra": {
+            "filament_vendor": ["Frucindra"],
+            "filament_density": ["1.27"],
+            "filament_type": ["PETG"],
+            "nozzle_temperature_range_low": ["220"],
+            "nozzle_temperature_range_high": ["250"],
+            "overhang_fan_speed": ["60"],
+            "eng_plate_temp": ["75"],
+            "eng_plate_temp_initial_layer": ["80"],
+            "hot_plate_temp": ["75"],
+            "hot_plate_temp_initial_layer": ["80"],
+            "filament_retraction_length": ["0.4"],
+            "filament_wipe": ["1"]
+        },
+        "description": "Frucindra PETG Black (1 kg, 1.75 +/- 0.02 mm). Spool: 220-250 C nozzle, 60-100 C bed (75-85 C glue-free). Dry 50-60 C for 4-6h."
+    },
+    {
+        "name": "Vertexfil PETG Basic 0.4",
+        "inherits": "Generic PETG @BBL P2S",
+        "base_id": "GFSG99_09",
+        "nozzle_temp": "250",
+        "nozzle_temp_init": "245",
+        "bed_temp": "80",
+        "bed_temp_init": "80",
+        "flow_ratio": "0.95",
+        "max_volumetric_speed": "16.0",
+        "fan_min_speed": "25",
+        "fan_max_speed": "55",
+        "filament_type": "PETG",
+        "drying_temp": "60",
+        "drying_time": "5",
+        "extra": {
+            "filament_vendor": ["Vertexfil"],
+            "filament_density": ["1.27"],
+            "filament_type": ["PETG"],
+            "nozzle_temperature_range_low": ["245"],
+            "nozzle_temperature_range_high": ["255"],
+            "overhang_fan_speed": ["60"],
+            "eng_plate_temp": ["80"],
+            "eng_plate_temp_initial_layer": ["80"],
+            "hot_plate_temp": ["80"],
+            "hot_plate_temp_initial_layer": ["80"],
+            "filament_retraction_length": ["0.4"],
+            "filament_wipe": ["1"]
+        },
+        "description": "Vertexfil PETG Basic Black (1 kg, 1.75 +/- 0.02 mm). Spool: 245-255 C nozzle, 75-85 C bed, <=200 mm/s. Dry 55-65 C for 4-6h."
     }
 ]
 
@@ -286,6 +348,11 @@ for fil in FILAMENTS:
         "compatible_printers": ["Bambu Lab P2S 0.4 nozzle"],
         "version": "2.6.0.5"
     }
+    if "drying_temp" in fil and "drying_time" in fil:
+        fil_dict["filament_dev_ams_drying_temperature"] = [fil["drying_temp"]] * 8
+        fil_dict["filament_dev_ams_drying_time"] = [fil["drying_time"]] * 8
+    if "extra" in fil:
+        fil_dict.update(fil["extra"])
 
     setting_id = gen_id("PFUS", fil["name"])
 

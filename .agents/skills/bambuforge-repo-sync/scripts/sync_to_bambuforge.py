@@ -38,12 +38,16 @@ SANITIZATION_RULES = [
     (rf"C:(\\\\|[\\/])Users(\\\\|[\\/]){_USER_KEYWORD}", "<USER_HOME>"),
     (rf"[Cc]:/[Uu]sers/{_USER_KEYWORD}", "<USER_HOME>"),
     (rf"{_USER_KEYWORD}", "mlgitdev"),  # Public GitHub handle
+    (r"(BambuStudio[\\/]+user[\\/]+)\d{6,}", r"\1<BAMBU_USER_ID>"),
+    (r"(user_id\s*=\s*)\d{6,}", r"\1<BAMBU_USER_ID>"),
 ]
 
 # Strict forbidden patterns that will abort the sync if detected in synced files
 FORBIDDEN_PATTERNS = [
     re.compile(rf"C:[\\/]Users[\\/]{_USER_KEYWORD}", re.IGNORECASE),
     re.compile(rf"{_PRJ_KEYWORD}", re.IGNORECASE),
+    re.compile(r"BambuStudio[\\/]user[\\/]\d{6,}", re.IGNORECASE),
+    re.compile(r"user_id\s*=\s*\d{6,}", re.IGNORECASE),
     re.compile(r"gho_[A-Za-z0-9_]{20,}"),
     re.compile(r"ghp_[A-Za-z0-9_]{20,}"),
 ]
@@ -62,6 +66,64 @@ SYNC_ITEMS = [
     ("build.ps1", "build.ps1"),
     (".gitignore", ".gitignore"),
 ]
+
+
+def sanitize_public_agents_md(text: str) -> str:
+    """
+    Keeps BambuForge's public AGENTS.md general-purpose for all users by preserving
+    Sections 0..6 (Onboarding, Architecture, Hardware, Support-Free Rules, Tolerances,
+    Worktree Protocol, Self-Learning Loop) and replacing personal Section 7 & Section 8
+    (user-specific project preferences & private Model Registry) with clean starter templates.
+    """
+    marker = "## 7. Learned User Preferences"
+    idx = text.find(marker)
+    if idx == -1:
+        return text
+    header_part = text[:idx].rstrip() + "\n\n"
+    public_tail = (
+        "## 7. Learned User Preferences (Auto-Updated)\n\n"
+        "> *This section is automatically populated by the `self-learning-cad` skill as you calibrate "
+        "your specific printer, filaments, and design preferences. Universal FDM engineering patterns "
+        "live in [`.agents/skills/3d-print-modeling/references/fdm-design-principles.md`]"
+        "(.agents/skills/3d-print-modeling/references/fdm-design-principles.md).*\n\n"
+        "* **Printer:** Configure via First-Run Onboarding (Section 0).\n"
+        "* **Default Slicing Philosophy:** Support-free (`<= 45°` overhangs, `Z = 0` chamfers), "
+        "`gyroid` sparse infill, native `.step` + `.3mf` multi-plate exports, and non-destructive "
+        "versioned `.3mf` iterations.\n"
+        "* **Multi-Color Strategy:** Offer both flush AMS inlay (`1.60–2.00 mm` depth) and zero-waste "
+        "single-color clip-together lattice/comb assemblies (`0` filament swaps) when appropriate.\n\n"
+        "---\n\n"
+        "## 8. Model Registry\n\n"
+        "| Date | Model Folder | Description | Status | Print Feedback / Notes |\n"
+        "| :--- | :--- | :--- | :--- | :--- |\n"
+        "| *(auto)* | `models/<model-name>/` | *New models generated in this workspace are indexed here automatically.* | — | — |\n"
+    )
+    return header_part + public_tail
+
+
+PUBLIC_LEARNED_PREFS_TEMPLATE = (
+    "# Learned User Preferences & Calibrated CAD Rules\n\n"
+    "> **Purpose:** This file is the living memory of your personal 3D modeling workspace. "
+    "As you provide fit feedback, dimensional tweaks, or aesthetic preferences, the `self-learning-cad` "
+    "skill appends your personal rules here so the agent never repeats a mistake.\n>\n"
+    "> **Universal FDM Rules:** General-purpose, community-applicable design standards live in "
+    "[`fdm-design-principles.md`](../../3d-print-modeling/references/fdm-design-principles.md).\n\n"
+    "---\n\n"
+    "## 1. Core Baseline Preferences\n\n"
+    "* **Primary CAD Engine:** `build123d` (Python OpenCascade B-Rep) + FreeCAD-compatible `.step` / `.3mf` / `.stl`.\n"
+    "* **Support-Free Priority:** High (`<= 45°` overhangs, `Z = 0` chamfers, teardrop horizontal holes `> 5 mm`).\n"
+    "* **Infill Default:** `gyroid` sparse infill (`40–50%` for print-flat structural rods).\n\n"
+    "---\n\n"
+    "## 2. Personal Fine-Tuning Rules Log\n\n"
+    "| Date | Category | Model | Gap Identified | Permanent Rule Adopted |\n"
+    "| :--- | :--- | :--- | :--- | :--- |\n"
+)
+
+
+# Files inside synced directories that store personal workspace history and should be generalized/skipped in public BambuForge
+SKIP_IN_PUBLIC = {
+    "feedback-log.jsonl",
+}
 
 
 def sanitize_text(text: str) -> str:
@@ -111,6 +173,8 @@ def copy_and_sanitize(src: Path, dst: Path, dry_run: bool = False, memory_violat
         else:
             text = src.read_text(encoding="utf-8", errors="ignore")
             sanitized = sanitize_text(text)
+            if src.name == "AGENTS.md":
+                sanitized = sanitize_public_agents_md(sanitized)
             if memory_violations is not None:
                 memory_violations.extend(audit_text_for_pii(sanitized, src.name))
             if not dry_run:
@@ -128,6 +192,12 @@ def copy_and_sanitize(src: Path, dst: Path, dry_run: bool = False, memory_violat
             src_file = Path(root) / file_name
             dst_file = target_root / file_name
 
+            if file_name in SKIP_IN_PUBLIC:
+                if not dry_run and dst_file.exists():
+                    dst_file.unlink()
+                skipped_count += 1
+                continue
+
             if not dry_run:
                 target_root.mkdir(parents=True, exist_ok=True)
 
@@ -136,8 +206,11 @@ def copy_and_sanitize(src: Path, dst: Path, dry_run: bool = False, memory_violat
                     shutil.copy2(src_file, dst_file)
                 copied_count += 1
             else:
-                text = src_file.read_text(encoding="utf-8", errors="ignore")
-                sanitized = sanitize_text(text)
+                if file_name == "learned-preferences.md":
+                    sanitized = PUBLIC_LEARNED_PREFS_TEMPLATE
+                else:
+                    text = src_file.read_text(encoding="utf-8", errors="ignore")
+                    sanitized = sanitize_text(text)
                 if memory_violations is not None:
                     memory_violations.extend(audit_text_for_pii(sanitized, str(rel_root / file_name)))
                 if not dry_run:

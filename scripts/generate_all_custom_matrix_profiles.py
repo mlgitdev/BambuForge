@@ -14,7 +14,7 @@ from pathlib import Path
 
 WORKSPACE = Path(r"<WORKSPACE_ROOT>")
 PROFILES_DIR = WORKSPACE / "profiles"
-USER_PRESET_DIR = Path(r"<USER_HOME>\AppData\Roaming\BambuStudio\user\944859351")
+USER_PRESET_DIR = Path(r"<USER_HOME>\AppData\Roaming\BambuStudio\user\<BAMBU_USER_ID>")
 USER_PROCESS_DIR = USER_PRESET_DIR / "process"
 
 PROFILES_DIR.mkdir(parents=True, exist_ok=True)
@@ -23,7 +23,7 @@ USER_PROCESS_DIR.mkdir(parents=True, exist_ok=True)
 NOW = int(time.time())
 
 def make_info_file(path: Path, setting_id: str, base_id: str = ""):
-    content = f"sync_info = \nuser_id = 944859351\nsetting_id = {setting_id}\nbase_id = {base_id}\nupdated_time = {NOW}\n"
+    content = f"sync_info = \nuser_id = <BAMBU_USER_ID>\nsetting_id = {setting_id}\nbase_id = {base_id}\nupdated_time = {NOW}\n"
     path.write_text(content, encoding="utf-8")
 
 def gen_id(prefix: str, seed: str) -> str:
@@ -143,11 +143,27 @@ FILAMENT_SPECS = {
         "0.20mm": ("45", "130", "190", "160", "2000", "7000"),
         "0.24mm": ("50", "150", "210", "175", "2200", "7000"),
         "0.28mm": ("50", "140", "180", "150", "2200", "7000"),
+    },
+    "Frucindra PETG": {
+        "0.08mm": ("45", "90", "140", "110", "1800", "5000"),
+        "0.12mm": ("55", "115", "165", "130", "2200", "6000"),
+        "0.16mm": ("65", "135", "170", "145", "2500", "7000"),
+        "0.20mm": ("75", "140", "145", "135", "2800", "8000"),
+        "0.24mm": ("80", "120", "120", "120", "3000", "8000"),
+        "0.28mm": ("75", "105", "105", "100", "3000", "8000"),
+    },
+    "Vertexfil PETG Basic": {
+        "0.08mm": ("55", "110", "165", "125", "2200", "6000"),
+        "0.12mm": ("65", "135", "185", "145", "2500", "7000"),
+        "0.16mm": ("80", "155", "195", "160", "3000", "8000"),
+        "0.20mm": ("90", "165", "180", "160", "3500", "9000"),
+        "0.24mm": ("95", "145", "150", "140", "3500", "9000"),
+        "0.28mm": ("85", "125", "130", "120", "3500", "9000"),
     }
 }
 
 count = 0
-print("--- Generating 30 Specific Process Profiles ---")
+print(f"--- Generating {len(FILAMENT_SPECS) * 6} Specific Process Profiles ---")
 for fil_brand, layer_map in FILAMENT_SPECS.items():
     for lh_key, speeds in layer_map.items():
         ls = LAYER_SPECS[lh_key]
