@@ -94,6 +94,9 @@ Whenever packing multiple trays/modules and multi-color AMS sub-parts into a sin
 10. **Bambu Studio 2.6 `"include"` G-Code Resolution, Native Presets & `"gyroid"` Infill:**
    * Always use **`"gyroid"`** for `sparse_infill_pattern` (never `"rectilinear"`, which Bambu Studio 2.6 rejects for sparse infill with a warning popup).
    * Resolve both `"inherits"` and `"include"` JSON templates inside `_flatten_bambu_json()` (`p2s_cad_helpers.py`) before generating the `.3mf` via `bambu-studio.exe --load-settings "<machine>;<process>" --load-filaments "<filament>" --export-3mf`. Verify programmatically that `printer_settings_id == "Bambu Lab P2S 0.4 nozzle"`, `curr_bed_type == "Textured PEI Plate"`, `filament_settings_id == ["Bambu PLA Basic @BBL P2S"]` (or the requested installed filament), `print_settings_id` matches an installed process preset (never a made-up unnamed profile), and `different_settings_to_system[1..2] == ["", ""]` so zero G-code security popups or `(filename)` preset renames occur.
+11. **Non-Destructive `.3mf` Iteration & Parallel CLI Retry Guardrail:**
+   * When revising an existing model's `.3mf`, always preserve the prior file and emit a versioned sibling (e.g., `_v2_p2s_multiplate.3mf`) instead of overwriting in place, so the user can compare plates or keep a verified print profile intact.
+   * When multiple CAD subagents invoke `bambu-studio.exe --export-3mf` concurrently on Windows, shared cache/lock collisions can cause transient non-zero exit codes. Always wrap CLI calls in a **`3×` retry loop with `3 s` backoff** and verify the output `.3mf` exists and is non-empty before proceeding.
 
 ---
 

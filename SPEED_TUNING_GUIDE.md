@@ -2,7 +2,7 @@
 
 > **Target Printer:** Bambu Lab P2S (`0.4 mm` Hardened Steel Nozzle)  
 > **Slicer:** Bambu Studio / OrcaSlicer  
-> **Filaments Covered:** UJOYBIO Elite PLA+, Kingroon PLA Basic, Kingroon PLA Matte, Inslogic Tri-Color Silk PLA, Kingroon Silk PLA.  
+> **Filaments Covered:** UJOYBIO Elite PLA+, Kingroon PLA Basic, Kingroon PLA Matte, Inslogic Tri-Color Silk PLA, Kingroon Silk PLA, Frucindra PETG, Vertexfil PETG Basic.  
 > **Purpose:** Progressive speed calibration matrix with interactive test logging columns for post-print evaluation, failure diagnosis, and permanent profile optimization.
 
 ---
@@ -10,8 +10,8 @@
 ## 1. Physical Speed Governors & Safety Rules
 
 Before increasing speeds, keep these 3 inviolable rules in mind:
-1. **Never Touch the First Layer:** Keep Initial Layer Speed at `50 mm/s`, Infill at `105 mm/s`, Bed at `60 °C`, and Fan `OFF` for layers 1–3.
-2. **Initial Layer Nozzle Temp (Prime Line Snap):** Set Initial Layer Nozzle Temp to **`202 – 205 °C`** (even if other layers run at `215 – 220 °C`). This prevents the prime line from dragging an elastic ooze string across the plate.
+1. **Never Touch the First Layer:** Keep Initial Layer Speed at `50 mm/s`, Infill at `105 mm/s`, Bed at `60 °C` (`75–80 °C` for PETG), and Fan `OFF` for layers 1–3.
+2. **Initial Layer Nozzle Temp (Prime Line Snap):** Set Initial Layer Nozzle Temp slightly cooler — **`202 – 205 °C` for PLA** (`235 – 245 °C` for PETG) — even if upper layers run hotter. This prevents the prime line from dragging an elastic ooze string across the plate.
 3. **The Volumetric Flow Ceiling ($V_{max}$):**
    $$\text{Actual Linear Speed (mm/s)} = \min\left(\text{Target Speed}, \frac{V_{max}}{\text{Layer Height} \times \text{Line Width}}\right)$$
    If $V_{max} = 15\text{ mm}^3/\text{s}$, at `0.20 mm` height and `0.42 mm` width, your maximum physical speed is **`178.5 mm/s`**. To print infill at `270 mm/s`, you must ensure $V_{max} \ge 23\text{ mm}^3/\text{s}$ and increase nozzle temperature so the hotend can melt plastic fast enough.
@@ -49,17 +49,17 @@ Use this table to record settings and results as you dial in your printer.
 
 ## 3. Dedicated Process Profile Matrix (Installed in Bambu Studio)
 
-You can select any of the **30 custom-calibrated process profiles** directly from Bambu Studio's **Process** dropdown. They follow the naming pattern:
+You can select any of the **42 custom-calibrated process profiles** directly from Bambu Studio's **Process** dropdown. They follow the naming pattern:
 `"<layer_height> <Brand> <Type> @BBL P2S"`
 
-| Layer Height | UjoyBio PLA Plus | Kingroon PLA Basic | Kingroon PLA Matte | Inslogic Tri-Color Silk | Kingroon Silk PLA |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **0.08 mm** | `0.08mm UjoyBio PLA Plus @BBL P2S` | `0.08mm Kingroon PLA Basic @BBL P2S` | `0.08mm Kingroon PLA Matte @BBL P2S` | `0.08mm Inslogic Tri-Color Silk PLA @BBL P2S` | `0.08mm Kingroon Silk PLA @BBL P2S` |
-| **0.12 mm** | `0.12mm UjoyBio PLA Plus @BBL P2S` | `0.12mm Kingroon PLA Basic @BBL P2S` | `0.12mm Kingroon PLA Matte @BBL P2S` | `0.12mm Inslogic Tri-Color Silk PLA @BBL P2S` | `0.12mm Kingroon Silk PLA @BBL P2S` |
-| **0.16 mm** | `0.16mm UjoyBio PLA Plus @BBL P2S` | `0.16mm Kingroon PLA Basic @BBL P2S` | `0.16mm Kingroon PLA Matte @BBL P2S` | `0.16mm Inslogic Tri-Color Silk PLA @BBL P2S` | `0.16mm Kingroon Silk PLA @BBL P2S` |
-| **0.20 mm** | `0.20mm UjoyBio PLA Plus @BBL P2S` | `0.20mm Kingroon PLA Basic @BBL P2S` | `0.20mm Kingroon PLA Matte @BBL P2S` | `0.20mm Inslogic Tri-Color Silk PLA @BBL P2S` | `0.20mm Kingroon Silk PLA @BBL P2S` |
-| **0.24 mm** | `0.24mm UjoyBio PLA Plus @BBL P2S` | `0.24mm Kingroon PLA Basic @BBL P2S` | `0.24mm Kingroon PLA Matte @BBL P2S` | `0.24mm Inslogic Tri-Color Silk PLA @BBL P2S` | `0.24mm Kingroon Silk PLA @BBL P2S` |
-| **0.28 mm** | `0.28mm UjoyBio PLA Plus @BBL P2S` | `0.28mm Kingroon PLA Basic @BBL P2S` | `0.28mm Kingroon PLA Matte @BBL P2S` | `0.28mm Inslogic Tri-Color Silk PLA @BBL P2S` | `0.28mm Kingroon Silk PLA @BBL P2S` |
+| Layer Height | UjoyBio PLA Plus | Kingroon PLA Basic | Kingroon PLA Matte | Inslogic Tri-Color Silk | Kingroon Silk PLA | Frucindra PETG | Vertexfil PETG Basic |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **0.08 mm** | `0.08mm UjoyBio PLA Plus @BBL P2S` | `0.08mm Kingroon PLA Basic @BBL P2S` | `0.08mm Kingroon PLA Matte @BBL P2S` | `0.08mm Inslogic Tri-Color Silk PLA @BBL P2S` | `0.08mm Kingroon Silk PLA @BBL P2S` | `0.08mm Frucindra PETG @BBL P2S` | `0.08mm Vertexfil PETG Basic @BBL P2S` |
+| **0.12 mm** | `0.12mm UjoyBio PLA Plus @BBL P2S` | `0.12mm Kingroon PLA Basic @BBL P2S` | `0.12mm Kingroon PLA Matte @BBL P2S` | `0.12mm Inslogic Tri-Color Silk PLA @BBL P2S` | `0.12mm Kingroon Silk PLA @BBL P2S` | `0.12mm Frucindra PETG @BBL P2S` | `0.12mm Vertexfil PETG Basic @BBL P2S` |
+| **0.16 mm** | `0.16mm UjoyBio PLA Plus @BBL P2S` | `0.16mm Kingroon PLA Basic @BBL P2S` | `0.16mm Kingroon PLA Matte @BBL P2S` | `0.16mm Inslogic Tri-Color Silk PLA @BBL P2S` | `0.16mm Kingroon Silk PLA @BBL P2S` | `0.16mm Frucindra PETG @BBL P2S` | `0.16mm Vertexfil PETG Basic @BBL P2S` |
+| **0.20 mm** | `0.20mm UjoyBio PLA Plus @BBL P2S` | `0.20mm Kingroon PLA Basic @BBL P2S` | `0.20mm Kingroon PLA Matte @BBL P2S` | `0.20mm Inslogic Tri-Color Silk PLA @BBL P2S` | `0.20mm Kingroon Silk PLA @BBL P2S` | `0.20mm Frucindra PETG @BBL P2S` | `0.20mm Vertexfil PETG Basic @BBL P2S` |
+| **0.24 mm** | `0.24mm UjoyBio PLA Plus @BBL P2S` | `0.24mm Kingroon PLA Basic @BBL P2S` | `0.24mm Kingroon PLA Matte @BBL P2S` | `0.24mm Inslogic Tri-Color Silk PLA @BBL P2S` | `0.24mm Kingroon Silk PLA @BBL P2S` | `0.24mm Frucindra PETG @BBL P2S` | `0.24mm Vertexfil PETG Basic @BBL P2S` |
+| **0.28 mm** | `0.28mm UjoyBio PLA Plus @BBL P2S` | `0.28mm Kingroon PLA Basic @BBL P2S` | `0.28mm Kingroon PLA Matte @BBL P2S` | `0.28mm Inslogic Tri-Color Silk PLA @BBL P2S` | `0.28mm Kingroon Silk PLA @BBL P2S` | `0.28mm Frucindra PETG @BBL P2S` | `0.28mm Vertexfil PETG Basic @BBL P2S` |
 
 ---
 
@@ -111,16 +111,37 @@ You can select any of the **30 custom-calibrated process profiles** directly fro
   * **Nozzle Temp:** `212 – 220 °C`
   * **Bed Temp:** `55 – 60 °C`
 
+### Card F: Frucindra PETG (`Black`, `1 kg`)
+* **Optimal Flow Sweet Spot:** `11 – 13 mm³/s` (`13.0 mm³/s` max cap)
+* **Drying (Mandatory if stringing/popping):** `50 – 60 °C` for `4 – 6 h` *(manual spec)*.
+* **Speed & Thermal Recommendation:**
+  * **Outer Wall:** `45 – 80 mm/s` (moderate speed keeps glossy PETG finish & tight snaps)
+  * **Inner Wall / Infill:** `90 – 170 mm/s`
+  * **Nozzle Temp:** `235 °C` (1st layer) / `242 °C` (others; spool range `220–250 °C`)
+  * **Bed Temp:** `80 °C` (1st layer) / `75 °C` (others; box glue-free range `75–85 °C`, spool `60–100 °C`)
+  * **Fan:** `0%` first 3 layers -> `30 – 60%` (`60%` overhangs)
+
+### Card G: Vertexfil PETG Basic (`Black`, `1 kg`)
+* **Optimal Flow Sweet Spot:** `14 – 16 mm³/s` (`16.0 mm³/s` max cap; MFI `28 g/10 min` @ `250 °C`)
+* **Drying:** `55 – 65 °C` for `4 – 6 h` (`8 – 12 h` if saturated).
+* **Speed & Thermal Recommendation:**
+  * **Outer Wall:** `55 – 95 mm/s`
+  * **Inner Wall / Infill:** `110 – 195 mm/s` *(spool rated `≤ 200 mm/s*`)*
+  * **Nozzle Temp:** `245 °C` (1st layer) / `250 °C` (others; spool range `245–255 °C`)
+  * **Bed Temp:** `80 °C` (1st & other layers; spool range `75–85 °C`)
+  * **Fan:** `0%` first 3 layers -> `25 – 55%` (`60%` overhangs)
+
 ---
 
-## 4. Benchy Diagnostic Defect & Correction Cheat Sheet
+## 5. Benchy Diagnostic Defect & Correction Cheat Sheet
 
 | Symptom on Benchy | Root Cause | Immediate Slicer Fix |
 | :--- | :--- | :--- |
 | **Ghosting / Ringing Waves** on hull near anchor hole | Excessive outer wall acceleration vibrating toolhead | Reduce **Outer Wall Acceleration** from `4,000` to `2,500 – 3,000 mm/s²`. |
-| **Loose Sagging Strands** under cabin roof bridge | Bridge speed too fast or cooling inadequate | Set **Bridge Speed** to `25 – 30 mm/s` and ensure Auxiliary/Part Fan is `100%`. |
+| **Loose Sagging Strands** under cabin roof bridge | Bridge speed too fast or cooling inadequate | Set **Bridge Speed** to `25 – 30 mm/s` and ensure Auxiliary/Part Fan is `100%` (PLA) / `60%` (PETG). |
 | **Curling / Upturned Edges** on bow overhang ($60^\circ$) | Plastic staying molten too long on shallow overhang | Under Speed -> Overhang Speed: set $50-75\%$ overhangs to `30 mm/s` and $75-100\%$ to `15 mm/s`. |
-| **Prime Line Whisker** stretching to model brim | High nozzle temp causing ooze during initial travel | Set **Initial Layer Nozzle Temp** to `202 – 205 °C` (keep other layers at `215 °C`). |
-| **Extruder Clicking / Under-extrusion** during infill | Volumetric flow limit exceeded by linear speed demand | Increase nozzle temp by `5 °C` OR reduce Infill Speed by `30 mm/s` OR reduce $V_{max}$ to `16 mm³/s`. |
+| **Prime Line Whisker** stretching to model brim | High nozzle temp causing ooze during initial travel | Set **Initial Layer Nozzle Temp** to `202 – 205 °C` for PLA (`235 – 245 °C` for PETG). |
+| **Extruder Clicking / Under-extrusion** during infill | Volumetric flow limit exceeded by linear speed demand | Increase nozzle temp by `5 °C` OR reduce Infill Speed by `30 mm/s` OR cap $V_{max}$ (`13` Frucindra / `16` Vertexfil PETG). |
 | **Silk Filament Turning Dull / Chalky** | Printing outer wall too fast | Lock Outer Wall Speed to `40 – 50 mm/s`. |
-| **Brittle Layers / Snapping at Z seam** | Inadequate melt fusion at high speed | Raise nozzle temperature by `5 – 8 °C`. |
+| **PETG Fine Hairs, Blobs, Popping, or Rough Matte Walls** | Absorbed moisture in hygroscopic PETG or excessive cooling | Dry spool (**`50–60 °C` Frucindra / `55–65 °C` Vertexfil for `4–6 h`**); verify `0.4 mm` retraction + wipe `ON` + fan `<= 60%`. |
+| **Brittle Layers / Snapping at Z seam** | Inadequate melt fusion at high speed | Raise nozzle temperature by `5 – 8 °C` (and reduce PETG part fan toward `25 – 40%`). |

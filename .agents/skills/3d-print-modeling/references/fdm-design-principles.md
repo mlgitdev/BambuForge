@@ -159,3 +159,31 @@ When engineering enclosures, faceplates, signage, or flush multi-color inlays ac
    - Keep the blind shutter pocket roof beneath the funnel floor (`-2.0°` slope toward the tilted bed side + `4.5°` wall draft on opposing pocket walls) so `46°` tilted printing yields `0.0 g` internal support.
    - Build multi-vertex ruled lofts directly via `Face(Wire.make_polygon([Vector(x, y, z) for ...]))` and `loft([f_bot, f_top], ruled=True)` to prevent `BuildSketch` vertex re-indexing twists.
 
+---
+
+## 10. Universal Zero-Waste Multi-Color, Engraving, Print-Flat Strength & Texture Patterns
+
+1. **Zero-Waste Single-Color Clip-Together Multi-Color Architecture (`0` Filament Swaps, Zero Glue):**
+   - For multi-color flat boards, panels, and inlays without AMS purge waste (or for single-extruder printers), avoid gluing dozens of tiny loose tiles.
+   - **2-Piece Flush Interlocking Lattice:** Split a checkered/grid face into (a) a single-color **Raised-Island Base Plate** and (b) a contrasting single-color **Window Lattice Frame** that drops over the raised islands inside a `45°` tapered shell window so both colors sit `100%` flush (`0.18 mm` clearance).
+   - **Comb-Linked Multi-Element Strips:** Join repeated color shapes (e.g. triangles, stripes, accents) along a thin concealed perimeter rail with staggered Z-heights (`>= 0.60 mm` vertical separation between colors) and lock all strips flush beneath a single **Snap-In Perimeter Retaining Frame**. Every color prints on its own zero-swap single-color plate.
+
+2. **Single-Color Paint-Fillable Engravings & Flat-Printed Snap-Slide Lids:**
+   - For decorative single-color enclosures meant to be accent-painted with a fine brush (acrylic / model paint + wipe-off), print primary artwork faces flat in XY (`0.85–1.00 mm` deep, `>= 1.15 mm` stroke width) so paint pools crisply inside the grooves.
+   - On vertical side walls, use **`42°` V-chased or `42°`-roofed grooves (`0.65–0.80 mm` deep)** so overhangs remain `0.00% > 45°`.
+   - For two-part card/tool cases with zero-fall-off lids, pair a flat-printed dock with a flat-printed sliding cover captured by **`43.6°` dovetail rails** on three edges plus **twin `38.7°` octahedral snap-detents** (`0.12 mm`/side preload) and a `45°` U-shaped top finger pull-out scoop.
+
+3. **Print-Flat Axial Strength (Rods, Handles & Zero-Hardware Clamps):**
+   - Never print thin high-stress rods, poles, or blade-clamping studs upright along Z where interlayer delamination causes snapping.
+   - Print solid rods and handles **flat along X/Y on `Z = 0`** using a narrow planar bed strip (`~2.0–2.4 mm`) transitioning via `45°` lower bevels into the rounded/octagonal crown so filament strands run continuously along the load axis.
+   - Slice structural rods at **`40–50%` `gyroid` infill** (rather than brittle `100%` solid or weak hollow shells) for optimal flex ductility and impact resistance.
+   - For zero-hardware clamping (e.g. replaceable blades or tool inserts), lock parts via **twin `45°` sliding dovetails blocked by a 360° knurled sliding collar** or a **`45°` 3-wing bayonet twist-lock**, shielding sharp edges in a snap-detent scabbard (`>= 1.3 mm` internal edge clearance).
+
+4. **Upward-Facing Heightfield Texture Lofting (`n_z > 0` → `0.00%` Overhangs) & Support-Free Inverted Collars:**
+   - When adding continuous woven/rope/fluted textures across concave troughs and steep rising walls, compute the surface modulation strictly as a single-valued heightfield `z(x, y) = z_base(y) + Δz(x, y)` sampled uniformly in trough arc length `s` and lofted via explicit `Face(Wire.make_polygon(...))` sections. Because `n_z > 0` mathematically everywhere on a heightfield, overhangs `> 45°` stay strictly **`0.00%`**.
+   - Replace support-heavy curved stacking collars (downward fillets at `Z = 0`) with **inverted `42°–43°` beveled domes + `44°` self-centering nesting cradles**, and sculpt horizontal decorative wall coils with `<= 42.5°` beveled undersides transitioning into rounded crests (`0.00%` overhangs).
+
+5. **Cross-Suite Interface Locking & Flip-Proof Captive Travel Storage:**
+   - In `0° → 180°` folding travel cases, keep playing surfaces unobstructed and house loose pieces in **removable contoured cassettes with flush-nesting snap-on captive lids** plus stepped hold-down bridges (`<= 0.55 mm` gap) so inverting the closed case cannot dislodge components.
+   - When companion models mate across separate projects, lock exact outer/inner envelope contracts (`±0.05 mm`) upfront and verify **`0.000000 mm³` collision** via an automated cross-suite `.step`-to-B-Rep boolean intersection test before release.
+

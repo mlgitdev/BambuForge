@@ -1,0 +1,105 @@
+{
+    "from": "User",
+    "inherits": "Generic PETG @BBL P2S",
+    "name": "Frucindra PETG 0.4",
+    "filament_settings_id": [
+        "Frucindra PETG 0.4"
+    ],
+    "nozzle_temperature": [
+        "242",
+        "nil",
+        "nil"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "235",
+        "nil",
+        "nil"
+    ],
+    "textured_plate_temp": [
+        "75",
+        "nil",
+        "nil"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "80",
+        "nil",
+        "nil"
+    ],
+    "filament_flow_ratio": [
+        "0.95"
+    ],
+    "filament_max_volumetric_speed": [
+        "13.0",
+        "nil",
+        "nil"
+    ],
+    "fan_min_speed": [
+        "30"
+    ],
+    "fan_max_speed": [
+        "60"
+    ],
+    "close_fan_the_first_x_layers": [
+        "3"
+    ],
+    "compatible_printers": [
+        "Bambu Lab P2S 0.4 nozzle"
+    ],
+    "version": "2.6.0.5",
+    "filament_dev_ams_drying_temperature": [
+        "55",
+        "55",
+        "55",
+        "55",
+        "55",
+        "55",
+        "55",
+        "55"
+    ],
+    "filament_dev_ams_drying_time": [
+        "5",
+        "5",
+        "5",
+        "5",
+        "5",
+        "5",
+        "5",
+        "5"
+    ],
+    "filament_vendor": [
+        "Frucindra"
+    ],
+    "filament_density": [
+        "1.27"
+    ],
+    "filament_type": [
+        "PETG"
+    ],
+    "nozzle_temperature_range_low": [
+        "220"
+    ],
+    "nozzle_temperature_range_high": [
+        "250"
+    ],
+    "overhang_fan_speed": [
+        "60"
+    ],
+    "eng_plate_temp": [
+        "75"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "80"
+    ],
+    "hot_plate_temp": [
+        "75"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "80"
+    ],
+    "filament_retraction_length": [
+        "0.4"
+    ],
+    "filament_wipe": [
+        "1"
+    ]
+}
