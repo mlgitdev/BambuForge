@@ -97,6 +97,11 @@ Whenever packing multiple trays/modules and multi-color AMS sub-parts into a sin
 11. **Non-Destructive `.3mf` Iteration & Parallel CLI Retry Guardrail:**
    * When revising an existing model's `.3mf`, always preserve the prior file and emit a versioned sibling (e.g., `_v2_p2s_multiplate.3mf`) instead of overwriting in place, so the user can compare plates or keep a verified print profile intact.
    * When multiple CAD subagents invoke `bambu-studio.exe --export-3mf` concurrently on Windows, shared cache/lock collisions can cause transient non-zero exit codes. Always wrap CLI calls in a **`3×` retry loop with `3 s` backoff** and verify the output `.3mf` exists and is non-empty before proceeding.
+12. **Bambu Studio & Cloud-Slicer Multi-Color Prime Tower / Bed-Plate Parity:**
+   * Every multi-plate `.3mf` should pass local Bambu Studio CLI slicing (`bambu-studio.exe --slice <plate>` returning `rc = 0` on every plate) before distribution.
+   * Verify `curr_bed_type` has non-zero bed temperature for every filament slot (e.g., `"Textured PEI Plate"` for PETG/PLA/ASA — never `"Cool Plate"` with PETG HF, which fails slicing with `Filaments are not compatible with the plate type`).
+   * On large parts (`>= 235 mm` on a `256 mm` bed), explicitly set `brim_type = "no_brim"`, `brim_width = "0"`, and `skirt_loops = "0"` so G-code never exceeds `[0, 256]`.
+   * On **multi-color plates**, keep `enable_prime_tower = "1"`, shift large multi-color objects to open a `>= 55 mm` collision-free strip (e.g., `Y = 100 mm` for a `190 mm` deep model), and position `wipe_tower_x/y` cleanly inside that open strip (e.g., `(185, 205)` with `prime_tower_width = "35"`) so strict cloud/local slicers never report prime-tower collisions.
 
 ---
 

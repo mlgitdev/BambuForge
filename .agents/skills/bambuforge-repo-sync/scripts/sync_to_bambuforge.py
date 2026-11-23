@@ -22,6 +22,7 @@ from typing import List, Tuple, Dict
 # Split strings to prevent self-detection during audit
 _PRJ_KEYWORD = "Antigravity" + "Projects"
 _USER_KEYWORD = "mike" + "v"
+_MW_PUB_KEYWORD = "makerworld" + "-publisher"
 
 # Default paths (configurable via CLI or environment)
 _BASE_DIR = Path("E:/") / _PRJ_KEYWORD / "3dModeling"
@@ -48,6 +49,7 @@ FORBIDDEN_PATTERNS = [
     re.compile(rf"{_PRJ_KEYWORD}", re.IGNORECASE),
     re.compile(r"BambuStudio[\\/]user[\\/]\d{6,}", re.IGNORECASE),
     re.compile(r"user_id\s*=\s*\d{6,}", re.IGNORECASE),
+    re.compile(rf"{_MW_PUB_KEYWORD}", re.IGNORECASE),
     re.compile(r"gho_[A-Za-z0-9_]{20,}"),
     re.compile(r"ghp_[A-Za-z0-9_]{20,}"),
 ]
@@ -79,7 +81,12 @@ def sanitize_public_agents_md(text: str) -> str:
     idx = text.find(marker)
     if idx == -1:
         return text
-    header_part = text[:idx].rstrip() + "\n\n"
+    # Also strip private MakerWorld publishing lines from Section 1 workspace architecture
+    header_lines = [
+        ln for ln in text[:idx].splitlines()
+        if not re.search(rf"{_MW_PUB_KEYWORD}|\bmakerworld/|\bphotos/.*MakerWorld", ln, re.IGNORECASE)
+    ]
+    header_part = "\n".join(header_lines).rstrip() + "\n\n"
     public_tail = (
         "## 7. Learned User Preferences (Auto-Updated)\n\n"
         "> *This section is automatically populated by the `self-learning-cad` skill as you calibrate "
