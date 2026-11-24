@@ -77,5 +77,8 @@ python ".agents\skills\bambuforge-repo-sync\scripts\sync_to_bambuforge.py" --bum
 
 ### Pull Request & Governance Rules
 - All changes submitted to `BambuForge` must target `main` via PR.
-- PR titles must follow Conventional Commits (e.g., `feat(cad): ...`, `fix(slicer): ...`).
+- PR titles must follow Conventional Commits with a **single scope** (no commas — e.g., `feat(skills): ...`, `fix(slicer): ...`; NOT `feat(cad,skills): ...` which fails `pr-validator.yml`).
+- Pass PR descriptions via **`--body-file <file.md>`** on Windows PowerShell (avoids backtick mangling) and include all 5 required template headings: `## Summary`, `## Motivation / Context`, `## Changes`, `## Verification & Testing`, `## Checklist`.
+- Verify zero-PII audit passes with `0` personal paths, usernames, personal model specs, or numeric Bambu Studio cloud user IDs (`<BAMBU_USER_ID>`).
 - Only **`@mlgitdev`** can approve, merge, or force merge (`gh pr merge --admin --squash`).
+- **Post-Release Notes Polish:** After `release.yml` publishes `vX.Y.Z` archives (`.zip` / `.tar.gz`), update the GitHub Release body via `gh release edit vX.Y.Z --notes-file <changelog.md>` so real changelog highlights replace the static workflow boilerplate.

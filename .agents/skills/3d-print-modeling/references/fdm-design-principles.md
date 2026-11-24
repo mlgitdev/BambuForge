@@ -187,3 +187,8 @@ When engineering enclosures, faceplates, signage, or flush multi-color inlays ac
    - In `0° → 180°` folding travel cases, keep playing surfaces unobstructed and house loose pieces in **removable contoured cassettes with flush-nesting snap-on captive lids** plus stepped hold-down bridges (`<= 0.55 mm` gap) so inverting the closed case cannot dislodge components.
    - When companion models mate across separate projects, lock exact outer/inner envelope contracts (`±0.05 mm`) upfront and verify **`0.000000 mm³` collision** via an automated cross-suite `.step`-to-B-Rep boolean intersection test before release.
 
+6. **Support-Free Corrugated Wavy-Bottom Shells & Localized Interlock Piers:**
+   - For wide wavy/ribbed trays or cradles (`>= 25 mm` crest height), never leave a solid flat `Z = 0` prism beneath every ridge. Generate a backward-swept corrugated underside `z_bot(u)` enforcing `z_bot[i] <= max(0, z_bot[i+1] - tan(47°) * du)` and minimum wall thickness `>= 3.2 mm`.
+   - This leaves flat `13–16 mm` `Z = 0` stability feet under every valley trough while rising at `47°` from horizontal (`43°` overhang → strictly `<= 45°`, `0.00%` overhangs) to pointed cathedral arches beneath each crest and thin curved outer wings—typically cutting solid volume by **`~55–60%`** and real sliced filament by **`~28–40%`**.
+   - Place compact vertical-walled `Z = 0` piers ONLY where mechanical interlocks require backing (corner sockets, dovetail ends, bow-tie bosses, short spine piers), allowing the open `47°` wavy underside tunnel itself to double as the drop-in loading bay for underside locking keys.
+
